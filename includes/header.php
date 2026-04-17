@@ -55,290 +55,324 @@ if (in_array($page_param, $petugas_pages) && (!isset($_SESSION['role']) || !in_a
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Event Tiket - Sistem Pemesanan Tiket Online</title>
+    <title>EventTiket — Sistem Pemesanan Tiket Online</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        /* ━━━━━━━━━━━━━━ DESIGN TOKENS ━━━━━━━━━━━━━━ */
         :root {
-            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --c-primary: #6366f1;
+            --c-success: #10b981;
+            --c-warning: #f59e0b;
+            --c-danger:  #ef4444;
+            --c-info:    #06b6d4;
+
+            --g-primary: linear-gradient(135deg, #6366f1, #8b5cf6);
+            --g-success: linear-gradient(135deg, #10b981, #06b6d4);
+            --g-warning: linear-gradient(135deg, #f59e0b, #ef4444);
+            --g-danger:  linear-gradient(135deg, #ef4444, #ec4899);
+            --g-info:    linear-gradient(135deg, #06b6d4, #6366f1);
+            --g-dark:    linear-gradient(160deg, #1e293b, #0f172a);
+
+            --bg:        #f1f5f9;
+            --bg-card:   #ffffff;
+            --border:    #e2e8f0;
+            --txt:       #1e293b;
+            --txt-muted: #64748b;
+
+            --r-sm: 8px;  --r-md: 12px;  --r-lg: 18px;  --r-xl: 24px;
+            --sh-sm: 0 1px 4px rgba(0,0,0,.06);
+            --sh-md: 0 4px 20px rgba(0,0,0,.09);
+            --sh-lg: 0 12px 40px rgba(0,0,0,.14);
         }
 
+        /* ━━━━━━━━━━━━━━ BASE ━━━━━━━━━━━━━━ */
+        *, *::before, *::after { box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--txt);
+            font-size: .9rem;
+            line-height: 1.65;
         }
+        h1,h2,h3,h4,h5,h6 { font-weight: 700; }
+        a { text-decoration: none; }
 
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #c7d2fe; border-radius: 6px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--c-primary); }
+
+        /* ━━━━━━━━━━━━━━ NAVBAR ━━━━━━━━━━━━━━ */
         .navbar {
-            background: var(--primary-gradient) !important;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            background: #fff !important;
+            border-bottom: 1px solid var(--border);
+            box-shadow: var(--sh-sm);
+            padding: .55rem 0;
+            position: sticky; top: 0; z-index: 1030;
         }
-
         .navbar-brand {
-            font-weight: bold;
-            font-size: 1.5rem;
-            letter-spacing: -0.5px;
+            font-weight: 800; font-size: 1.2rem; letter-spacing: -.5px;
+            color: var(--c-primary) !important;
+            display: flex; align-items: center; gap: .5rem;
         }
-
-        .nav-link {
-            font-weight: 500;
-            transition: all 0.3s ease;
+        .brand-icon {
+            background: var(--g-primary);
+            width: 33px; height: 33px; border-radius: 9px;
+            display: inline-flex; align-items: center; justify-content: center;
+            color: #fff; font-size: .95rem; flex-shrink: 0;
         }
-
-        .nav-link:hover {
-            transform: translateY(-2px);
+        .navbar .nav-link {
+            color: var(--txt-muted) !important; font-weight: 500;
+            font-size: .865rem; padding: .45rem .8rem !important;
+            border-radius: var(--r-sm); transition: all .2s;
         }
-
-        .card-event {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: none;
-            border-radius: 16px;
-            overflow: hidden;
-            background: white;
+        .navbar .nav-link:hover { color: var(--c-primary) !important; background: rgba(99,102,241,.08); }
+        .navbar .nav-link i { margin-right: 3px; }
+        .navbar .dropdown-menu {
+            border: 1px solid var(--border); border-radius: var(--r-md);
+            box-shadow: var(--sh-lg); padding: .35rem;
+            margin-top: .4rem !important; min-width: 170px;
         }
-
-        .card-event:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        .navbar .dropdown-item {
+            border-radius: var(--r-sm); font-size: .855rem;
+            padding: .5rem .8rem; font-weight: 500; transition: all .18s; color: var(--txt);
         }
-
-        .card-event .card-header {
-            background: var(--primary-gradient);
-            border: none;
-            padding: 1rem 1.5rem;
+        .navbar .dropdown-item:hover { background: rgba(99,102,241,.08); color: var(--c-primary); }
+        .navbar .dropdown-item.text-danger:hover { background: rgba(239,68,68,.08); }
+        .user-pill {
+            background: var(--g-primary); color: #fff;
+            padding: .3rem .9rem; border-radius: 50px;
+            font-weight: 600; font-size: .8rem;
+            display: inline-flex; align-items: center; gap: .35rem;
         }
-
-        .card-event .card-body {
-            padding: 1.5rem;
+        .btn-login-nav {
+            background: var(--g-primary) !important; color: #fff !important;
+            padding: .38rem 1.1rem !important; border-radius: 50px !important;
+            font-weight: 600 !important; border: none !important;
         }
+        .btn-login-nav:hover { opacity: .88; color: #fff !important; }
 
-        .card-event .card-footer {
-            padding: 1rem 1.5rem 1.5rem;
-        }
-
-        .btn {
-            border-radius: 10px;
-            font-weight: 600;
-            padding: 0.6rem 1.5rem;
-            transition: all 0.3s ease;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .btn-primary {
-            background: var(--primary-gradient);
-            border: none;
-        }
-
-        .btn-success {
-            background: var(--success-gradient);
-            border: none;
-        }
-
-        .btn-warning {
-            background: var(--warning-gradient);
-            border: none;
-            color: white;
-        }
-
+        /* ━━━━━━━━━━━━━━ SIDEBAR ━━━━━━━━━━━━━━ */
         .sidebar {
-            min-height: calc(100vh - 70px);
-            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
-            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+            min-height: calc(100vh - 58px);
+            background: #0f172a;
+            box-shadow: 4px 0 24px rgba(0,0,0,.18);
+            padding-top: .5rem; padding-bottom: 2rem;
         }
-
+        .sidebar-label {
+            color: #334155; font-size: .63rem; font-weight: 700;
+            letter-spacing: 1.4px; text-transform: uppercase;
+            padding: .85rem 1.2rem .3rem;
+        }
         .sidebar .nav-link {
-            border-radius: 10px;
-            margin: 5px 15px;
-            padding: 12px 20px;
-            color: #a0a0a0 !important;
-            transition: all 0.3s ease;
+            color: #94a3b8 !important; font-weight: 500; font-size: .85rem;
+            border-radius: var(--r-md); margin: 1px 8px;
+            padding: .6rem .95rem !important; transition: all .18s;
+            display: flex; align-items: center; gap: .55rem;
         }
+        .sidebar .nav-link i { font-size: .95rem; width: 18px; text-align: center; flex-shrink: 0; }
+        .sidebar .nav-link:hover { background: rgba(99,102,241,.14); color: #e2e8f0 !important; transform: translateX(3px); }
+        .sidebar .nav-link.active { background: rgba(99,102,241,.22); color: #a5b4fc !important; font-weight: 600; }
+        .sidebar .nav-link.active i { color: #818cf8; }
+        .sidebar .nav-link.text-danger { color: #f87171 !important; }
+        .sidebar .nav-link.text-danger:hover { background: rgba(239,68,68,.12); color: #fca5a5 !important; }
 
-        .sidebar .nav-link:hover,
-        .sidebar .nav-link.active {
-            background: rgba(255, 255, 255, 0.1);
-            color: white !important;
-            transform: translateX(5px);
+        /* ━━━━━━━━━━━━━━ CARDS ━━━━━━━━━━━━━━ */
+        .card {
+            border: 1px solid var(--border) !important;
+            border-radius: var(--r-lg) !important;
+            box-shadow: var(--sh-sm); background: var(--bg-card);
+            transition: box-shadow .2s;
         }
-
-        .sidebar .nav-link i {
-            margin-right: 10px;
-            font-size: 1.1rem;
+        .card:hover { box-shadow: var(--sh-md); }
+        .card-header {
+            border-radius: var(--r-lg) var(--r-lg) 0 0 !important;
+            border-bottom: 1px solid var(--border) !important;
+            background: #f8fafc; padding: .9rem 1.2rem; font-weight: 600;
         }
+        .card-header.bg-primary   { background: var(--g-primary) !important; border-bottom: none !important; }
+        .card-header.bg-success   { background: var(--g-success) !important; border-bottom: none !important; }
+        .card-header.bg-dark      { background: var(--g-dark)    !important; border-bottom: none !important; }
+        .card-header.bg-secondary { background: #475569           !important; border-bottom: none !important; }
+        .card-header.bg-warning   { background: var(--g-warning)  !important; border-bottom: none !important; color:#fff; }
+        .card-header.bg-info      { background: var(--g-info)     !important; border-bottom: none !important; }
 
+        /* stat cards */
         .stat-card {
-            border: none;
-            border-radius: 16px;
-            padding: 1.5rem;
-            color: white;
-            transition: all 0.3s ease;
+            border: none !important; border-radius: var(--r-lg) !important;
+            padding: 1.4rem; color: #fff;
+            position: relative; overflow: hidden;
+            transition: transform .25s, box-shadow .25s;
+        }
+        .stat-card::before {
+            content: ''; position: absolute; top: -18px; right: -18px;
+            width: 80px; height: 80px; background: rgba(255,255,255,.12); border-radius: 50%;
+        }
+        .stat-card::after {
+            content: ''; position: absolute; bottom: -28px; right: 14px;
+            width: 110px; height: 110px; background: rgba(255,255,255,.07); border-radius: 50%;
+        }
+        .stat-card:hover { transform: translateY(-4px); box-shadow: var(--sh-lg) !important; }
+        .stat-card.primary { background: var(--g-primary); }
+        .stat-card.success { background: var(--g-success); }
+        .stat-card.warning { background: var(--g-warning); }
+        .stat-card.danger  { background: var(--g-danger);  }
+        .stat-card.info    { background: var(--g-info);    }
+        .stat-card h2, .stat-card h4 { font-weight: 800; }
+
+        /* event cards */
+        .card-event {
+            border: 1px solid var(--border) !important;
+            border-radius: var(--r-xl) !important;
+            overflow: hidden;
+            transition: all .3s cubic-bezier(.4,0,.2,1);
+        }
+        .card-event:hover { transform: translateY(-6px); box-shadow: var(--sh-lg) !important; }
+        .card-event .card-header {
+            background: var(--g-primary) !important;
+            border: none !important; color: #fff;
+            position: relative; overflow: hidden;
+        }
+        .card-event .card-header::before {
+            content: ''; position: absolute; top: -20px; right: -20px;
+            width: 80px; height: 80px; background: rgba(255,255,255,.1); border-radius: 50%;
         }
 
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-        }
-
-        .stat-card.primary {
-            background: var(--primary-gradient);
-        }
-
-        .stat-card.success {
-            background: var(--success-gradient);
-        }
-
-        .stat-card.warning {
-            background: var(--warning-gradient);
-        }
-
-        .stat-card.danger {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-        }
-
+        /* ━━━━━━━━━━━━━━ TABLE ━━━━━━━━━━━━━━ */
         .table-container {
-            background: white;
-            border-radius: 16px;
-            padding: 1.5rem;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            background: var(--bg-card); border-radius: var(--r-lg);
+            padding: 1.4rem; border: 1px solid var(--border); box-shadow: var(--sh-sm);
         }
-
+        .table { --bs-table-border-color: #f1f5f9; }
         .table thead th {
-            background: #f8f9fa;
-            border: none;
-            font-weight: 600;
-            color: #495057;
-            padding: 1rem;
+            background: #f8fafc; border-bottom: 2px solid var(--border);
+            font-weight: 600; font-size: .78rem; letter-spacing: .5px;
+            text-transform: uppercase; color: var(--txt-muted); padding: .8rem 1rem;
+        }
+        .table tbody td { padding: .8rem 1rem; vertical-align: middle; border-color: #f1f5f9; }
+        .table tbody tr { transition: background .15s; }
+        .table tbody tr:hover { background: #f8fafc; }
+
+        /* ━━━━━━━━━━━━━━ BUTTONS ━━━━━━━━━━━━━━ */
+        .btn {
+            border-radius: var(--r-md); font-weight: 600; font-size: .875rem;
+            padding: .52rem 1.2rem; transition: all .2s; border: none; letter-spacing: .15px;
+        }
+        .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,.15); }
+        .btn:active { transform: translateY(0); }
+        .btn-primary   { background: var(--g-primary); color: #fff; }
+        .btn-success   { background: var(--g-success); color: #fff; }
+        .btn-warning   { background: var(--g-warning); color: #fff; }
+        .btn-danger    { background: var(--g-danger);  color: #fff; }
+        .btn-info      { background: var(--g-info);    color: #fff; }
+        .btn-secondary { background: #e2e8f0; color: var(--txt); }
+        .btn-secondary:hover { background: #cbd5e1; color: var(--txt); transform: translateY(-1px); }
+        .btn-outline-primary  { border: 2px solid var(--c-primary) !important; color: var(--c-primary); background: transparent; }
+        .btn-outline-primary:hover  { background: var(--g-primary); color: #fff; border-color: transparent !important; }
+        .btn-outline-secondary { border: 2px solid var(--border) !important; color: var(--txt-muted); background: transparent; }
+        .btn-outline-secondary:hover { background: #f1f5f9; color: var(--txt); }
+        .btn-sm { padding: .32rem .7rem; font-size: .785rem; border-radius: var(--r-sm); }
+        .btn-lg { padding: .7rem 1.65rem; font-size: .95rem; }
+
+        /* ━━━━━━━━━━━━━━ FORMS ━━━━━━━━━━━━━━ */
+        .form-control, .form-select {
+            border-radius: var(--r-md); border: 1.5px solid var(--border);
+            padding: .62rem 1rem; font-size: .875rem; background: #f8fafc; transition: all .2s;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--c-primary); background: #fff;
+            box-shadow: 0 0 0 3px rgba(99,102,241,.15);
+        }
+        .form-label {
+            font-weight: 600; font-size: .8rem; color: var(--txt-muted);
+            text-transform: uppercase; letter-spacing: .4px; margin-bottom: .35rem;
+        }
+        .input-group-text {
+            background: #f1f5f9; border: 1.5px solid var(--border); color: var(--txt-muted);
         }
 
-        .table tbody td {
-            padding: 1rem;
-            vertical-align: middle;
-        }
+        /* ━━━━━━━━━━━━━━ MISC ━━━━━━━━━━━━━━ */
+        .badge { padding: .38em .82em; border-radius: 50px; font-weight: 600; font-size: .74rem; }
 
-        .table tbody tr:hover {
-            background: #f8f9fa;
+        .pagination .page-link {
+            border-radius: var(--r-sm) !important; border: 1.5px solid var(--border);
+            color: var(--txt-muted); font-weight: 500; font-size: .84rem;
+            padding: .38rem .72rem; margin: 0 2px; transition: all .18s;
         }
+        .pagination .page-link:hover { background: rgba(99,102,241,.1); border-color: var(--c-primary); color: var(--c-primary); }
+        .pagination .page-item.active .page-link { background: var(--g-primary); border-color: transparent; color: #fff; }
 
-        .badge {
-            padding: 0.5em 1em;
-            border-radius: 20px;
-            font-weight: 500;
-        }
+        .alert { border-radius: var(--r-md); border: none; font-weight: 500; font-size: .875rem; }
 
-        .form-control,
-        .form-select {
-            border-radius: 10px;
-            border: 2px solid #e9ecef;
-            padding: 0.75rem 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .form-control:focus,
-        .form-select:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-        }
-
-        .page-title {
-            font-weight: 700;
-            color: #2c3e50;
-            margin-bottom: 0.5rem;
-        }
-
-        .breadcrumb {
-            background: none;
-            padding: 0;
-        }
+        .page-title { font-weight: 800; font-size: 1.35rem; color: var(--txt); margin-bottom: .2rem; }
+        .breadcrumb { background: none; padding: 0; font-size: .8rem; }
+        .breadcrumb-item+.breadcrumb-item::before { color: var(--txt-muted); }
+        .breadcrumb-item a { color: var(--c-primary); font-weight: 500; }
+        .breadcrumb-item.active { color: var(--txt-muted); }
 
         .hero-section {
-            background: var(--primary-gradient);
-            position: relative;
-            overflow: hidden;
+            background: var(--g-primary); position: relative;
+            overflow: hidden; padding: 5rem 0 4rem;
         }
-
         .hero-section::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -10%;
-            width: 500px;
-            height: 500px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
+            content: ''; position: absolute; top: -70px; right: -70px;
+            width: 380px; height: 380px; background: rgba(255,255,255,.06); border-radius: 50%;
         }
-
         .hero-section::after {
-            content: '';
-            position: absolute;
-            bottom: -30%;
-            left: -5%;
-            width: 300px;
-            height: 300px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 50%;
-        }
-
-        .floating-icon {
-            animation: float 3s ease-in-out infinite;
-        }
-
-        @keyframes float {
-
-            0%,
-            100% {
-                transform: translateY(0px);
-            }
-
-            50% {
-                transform: translateY(-20px);
-            }
-        }
-
-        .alert {
-            border-radius: 12px;
-            border: none;
-        }
-
-        .card {
-            border: none;
-            border-radius: 16px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-
-        .card-header {
-            border-radius: 16px 16px 0 0 !important;
-            border: none;
+            content: ''; position: absolute; bottom: -55px; left: -35px;
+            width: 280px; height: 280px; background: rgba(255,255,255,.04); border-radius: 50%;
         }
 
         .ticket-code {
             font-family: 'Courier New', monospace;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
+            background: var(--g-primary);
+            -webkit-background-clip: text; background-clip: text;
             -webkit-text-fill-color: transparent;
-            font-weight: bold;
-            letter-spacing: 2px;
+            font-weight: 800; letter-spacing: 2px; font-size: 1.05rem;
+        }
+        .floating-icon { animation: floatY 3.5s ease-in-out infinite; }
+        @keyframes floatY { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-16px); } }
+        .text-gradient {
+            background: var(--g-primary);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        footer { background: #fff !important; border-top: 1px solid var(--border) !important; color: var(--txt-muted); font-size: .82rem; }
+
+        .nav-tabs { border-bottom: 2px solid var(--border); }
+        .nav-tabs .nav-link {
+            border: none; border-bottom: 2px solid transparent; border-radius: 0;
+            margin-bottom: -2px; color: var(--txt-muted); font-weight: 600;
+            font-size: .875rem; padding: .62rem 1.2rem; transition: all .2s;
+        }
+        .nav-tabs .nav-link:hover { color: var(--c-primary); border-bottom-color: #a5b4fc; }
+        .nav-tabs .nav-link.active { color: var(--c-primary); border-bottom-color: var(--c-primary); background: none; }
+
+        @media (max-width: 768px) {
+            .sidebar { min-height: auto; }
+            .stat-card { margin-bottom: 1rem; }
+            .page-title { font-size: 1.15rem; }
         }
     </style>
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-lg">
         <div class="container">
-            <a class="navbar-brand" href="?p=home"><i class="bi bi-ticket-perforated"></i> EventTiket</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
+            <a class="navbar-brand" href="?p=home">
+                <span class="brand-icon"><i class="bi bi-ticket-perforated-fill"></i></span>
+                EventTiket
+            </a>
+            <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <i class="bi bi-list fs-4" style="color:var(--txt-muted)"></i>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav ms-auto align-items-center gap-1">
                     <li class="nav-item">
-                        <a class="nav-link" href="?p=home"><i class="bi bi-house"></i> Home</a>
+                        <a class="nav-link" href="?p=home"><i class="bi bi-house-door"></i> Home</a>
                     </li>
                     <?php if (isset($_SESSION['id_user'])): ?>
                         <?php if ($_SESSION['role'] == 'admin'): ?>
@@ -347,7 +381,7 @@ if (in_array($page_param, $petugas_pages) && (!isset($_SESSION['role']) || !in_a
                             </li>
                         <?php elseif ($_SESSION['role'] == 'petugas'): ?>
                             <li class="nav-item">
-                                <a class="nav-link" href="?p=dashboard_petugas"><i class="bi bi-person-badge"></i> Dashboard Petugas</a>
+                                <a class="nav-link" href="?p=dashboard_petugas"><i class="bi bi-person-badge"></i> Dashboard</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="?p=petugas_checkin"><i class="bi bi-qr-code-scan"></i> Check-in</a>
@@ -360,17 +394,22 @@ if (in_array($page_param, $petugas_pages) && (!isset($_SESSION['role']) || !in_a
                                 <a class="nav-link" href="?p=riwayat"><i class="bi bi-clock-history"></i> Riwayat</a>
                             </li>
                         <?php endif; ?>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-person-circle"></i> <?= htmlspecialchars($_SESSION['nama']) ?>
+                        <li class="nav-item dropdown ms-2">
+                            <a class="nav-link dropdown-toggle p-0" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                <span class="user-pill">
+                                    <i class="bi bi-person-circle"></i>
+                                    <?= htmlspecialchars($_SESSION['nama']) ?>
+                                </span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="?p=logout"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+                                <li><h6 class="dropdown-header" style="font-size:.72rem;letter-spacing:.5px"><?= strtoupper($_SESSION['role']) ?></h6></li>
+                                <li><hr class="dropdown-divider my-1"></li>
+                                <li><a class="dropdown-item text-danger" href="?p=logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
                             </ul>
                         </li>
                     <?php else: ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="?p=login"><i class="bi bi-box-arrow-in-right"></i> Login</a>
+                        <li class="nav-item ms-1">
+                            <a class="nav-link btn-login-nav" href="?p=login"><i class="bi bi-box-arrow-in-right me-1"></i>Login</a>
                         </li>
                     <?php endif; ?>
                 </ul>
