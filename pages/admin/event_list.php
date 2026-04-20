@@ -66,9 +66,13 @@ $query       = mysqli_query($conn, "SELECT e.*, v.nama_venue FROM event e JOIN v
                                         <td class="text-center fw-bold text-muted"><?= $no++ ?></td>
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
-                                                    <i class="bi bi-calendar-event text-primary"></i>
-                                                </div>
+                                                <?php if($row['gambar']): ?>
+                                                    <img src="uploads/<?= $row['gambar'] ?>" alt="" class="rounded me-3" style="width: 45px; height: 45px; object-fit: cover;">
+                                                <?php else: ?>
+                                                    <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                                        <i class="bi bi-calendar-event text-primary"></i>
+                                                    </div>
+                                                <?php endif; ?>
                                                 <h6 class="mb-0 fw-bold"><?= htmlspecialchars($row['nama_event']) ?></h6>
                                             </div>
                                         </td>

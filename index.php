@@ -14,7 +14,7 @@ $allowed_pages = [
     'admin_event', 'admin_event_tambah', 'admin_event_edit',
     'admin_tiket', 'admin_tiket_tambah', 'admin_tiket_edit',
     'admin_voucher', 'admin_voucher_tambah', 'admin_voucher_edit',
-    'admin_laporan', 'admin_checkin', 'admin_order_detail',
+    'admin_laporan', 'admin_checkin', 'admin_order_detail', 'admin_order_list',
     'petugas_checkin'
 ];
 
@@ -132,6 +132,9 @@ switch ($page) {
         break;
     case 'admin_order_detail':
         include 'pages/admin/order_detail.php';
+        break;
+    case 'admin_order_list':
+        include 'pages/admin/order_list.php';
         break;
 
     // === PETUGAS ===

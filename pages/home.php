@@ -80,7 +80,7 @@
     <div class="row g-4 mb-5">
         <?php $features = [
             ['bi-lightning-charge-fill','var(--g-primary)','Cepat & Mudah','Proses pemesanan tiket dalam hitungan menit, kapan saja dan di mana saja.'],
-            ['bi-shield-check-fill','var(--g-success)','100% Aman','Transaksi aman dengan sistem keamanan berlapis yang terpercaya.'],
+            ['bi-shield-check','var(--g-success)','100% Aman','Transaksi aman dengan sistem keamanan berlapis yang terpercaya.'],
             ['bi-qr-code','var(--g-warning)','E-Tiket Digital','Tiket digital dengan QR Code — tanpa perlu cetak, langsung tunjukkan saat masuk.'],
         ]; foreach ($features as $f): ?>
         <div class="col-md-4">
@@ -122,22 +122,26 @@
             ?>
             <div class="col-md-4">
                 <div class="card card-event h-100">
+                    <?php $bg_image = $d['gambar'] ? "url('uploads/{$d['gambar']}')" : "var(--g-primary)"; ?>
                     <!-- Banner -->
-                    <div class="card-header" style="padding:1.4rem 1.4rem 1rem;">
-                        <div class="d-flex justify-content-between align-items-start">
+                    <div class="card-header position-relative" style="padding:1.4rem 1.4rem 1rem; background: <?= $bg_image ?>; background-size: cover; background-position: center; border-radius: var(--r-lg) var(--r-lg) 0 0;">
+                        <?php if($d['gambar']): ?>
+                            <div style="position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); border-radius: var(--r-lg) var(--r-lg) 0 0;"></div>
+                        <?php endif; ?>
+                        <div class="d-flex justify-content-between align-items-start position-relative" style="z-index:1; color:#fff;">
                             <div>
-                                <span class="badge mb-2"
-                                      style="background:rgba(255,255,255,.2);border-radius:50px;font-size:.72rem;">
+                                <span class="badge mb-2 text-white"
+                                      style="background:rgba(255,255,255,.2);backdrop-filter:blur(4px);border-radius:50px;font-size:.72rem;">
                                     <i class="bi bi-calendar3 me-1"></i><?= $tanggal ?>
                                 </span>
-                                <h5 class="mb-0 fw-bold lh-sm" style="font-size:1rem;">
+                                <h5 class="mb-0 fw-bold lh-sm text-white" style="font-size:1rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
                                     <?= htmlspecialchars($d['nama_event']) ?>
                                 </h5>
                             </div>
-                            <div class="text-center ms-2 flex-shrink-0"
-                                 style="background:rgba(255,255,255,.18);border-radius:12px;padding:.4rem .7rem;min-width:48px;">
+                            <div class="text-center ms-2 flex-shrink-0 text-white"
+                                 style="background:rgba(255,255,255,.2);backdrop-filter:blur(4px);border-radius:12px;padding:.4rem .7rem;min-width:48px;">
                                 <div style="font-size:1.4rem;font-weight:800;line-height:1;"><?= $tgl_short ?></div>
-                                <div style="font-size:.65rem;opacity:.85;text-transform:uppercase;"><?= $bln_short ?></div>
+                                <div style="font-size:.65rem;opacity:.9;text-transform:uppercase;"><?= $bln_short ?></div>
                             </div>
                         </div>
                     </div>
@@ -174,13 +178,3 @@
         </div>
     </div>
 </div>
-
-<!-- ════════════ FOOTER STRIP ════════════ -->
-<footer class="mt-5 py-4">
-    <div class="container text-center">
-        <p class="mb-0">
-            &copy; <?= date('Y') ?> <strong style="color:var(--c-primary)">EventTiket</strong>.
-            Dibuat dengan <i class="bi bi-heart-fill text-danger"></i> untuk semua pecinta event.
-        </p>
-    </div>
-</footer>

@@ -31,18 +31,23 @@ $bulan   = date('M Y', strtotime($event['tanggal']));
         <!-- ── Event Info sidebar ── -->
         <div class="col-lg-4">
             <!-- Date banner card -->
-            <div class="card mb-3" style="overflow:hidden;border:none!important;">
-                <div style="background:var(--g-primary);padding:2rem 1.5rem;color:#fff;position:relative;overflow:hidden;">
-                    <div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;background:rgba(255,255,255,.1);border-radius:50%;"></div>
-                    <div class="d-flex align-items-start gap-3">
-                        <div class="text-center flex-shrink-0"
-                             style="background:rgba(255,255,255,.18);border-radius:14px;padding:.6rem 1rem;min-width:60px;">
+            <div class="card mb-3" style="overflow:hidden;border:none!important; border-radius: var(--r-lg);">
+                <?php $bg_image_detail = $event['gambar'] ? "url('uploads/{$event['gambar']}')" : "var(--g-primary)"; ?>
+                <div style="background:<?= $bg_image_detail ?>;background-size:cover;background-position:center;padding:2rem 1.5rem;color:#fff;position:relative;overflow:hidden;">
+                    <?php if($event['gambar']): ?>
+                        <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);"></div>
+                    <?php else: ?>
+                        <div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;background:rgba(255,255,255,.1);border-radius:50%;"></div>
+                    <?php endif; ?>
+                    <div class="d-flex align-items-start gap-3 position-relative" style="z-index: 1;">
+                        <div class="text-center flex-shrink-0 text-white"
+                             style="background:rgba(255,255,255,.2);backdrop-filter:blur(6px);border-radius:14px;padding:.6rem 1rem;min-width:60px;">
                             <div style="font-size:2rem;font-weight:800;line-height:1;"><?= $hari ?></div>
-                            <div style="font-size:.7rem;text-transform:uppercase;opacity:.85;"><?= $bulan ?></div>
+                            <div style="font-size:.7rem;text-transform:uppercase;opacity:.9;"><?= $bulan ?></div>
                         </div>
-                        <div>
-                            <h5 class="fw-bold mb-1 lh-sm"><?= htmlspecialchars($event['nama_event']) ?></h5>
-                            <div style="font-size:.82rem;opacity:.82;"><i class="bi bi-geo-alt-fill me-1"></i><?= htmlspecialchars($event['nama_venue']) ?></div>
+                        <div class="text-white">
+                            <h5 class="fw-bold mb-1 lh-sm" style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);"><?= htmlspecialchars($event['nama_event']) ?></h5>
+                            <div style="font-size:.82rem;opacity:.9;text-shadow: 0 1px 2px rgba(0,0,0,0.5);"><i class="bi bi-geo-alt-fill me-1"></i><?= htmlspecialchars($event['nama_venue']) ?></div>
                         </div>
                     </div>
                 </div>

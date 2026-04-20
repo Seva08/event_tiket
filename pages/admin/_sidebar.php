@@ -1,9 +1,10 @@
 <?php
 $cp = isset($_GET['p']) ? $_GET['p'] : '';
 $menu = [
-    ['p' => 'dashboard_admin',  'icon' => 'bi-speedometer2',     'label' => 'Dashboard'],
+    ['p' => 'dashboard_admin',  'icon' => 'bi-speedometer2',          'label' => 'Dashboard'],
     ['p' => 'admin_laporan',    'icon' => 'bi-file-earmark-bar-graph', 'label' => 'Laporan'],
-    ['p' => 'admin_checkin',    'icon' => 'bi-qr-code-scan',     'label' => 'Check-in'],
+    ['p' => 'admin_order_list', 'icon' => 'bi-receipt-cutoff',         'label' => 'Orders'],
+    ['p' => 'admin_checkin',    'icon' => 'bi-qr-code-scan',           'label' => 'Check-in'],
     ['sep' => 'MASTER DATA'],
     ['p' => 'admin_venue',      'icon' => 'bi-geo-alt',           'label' => 'Venue'],
     ['p' => 'admin_event',      'icon' => 'bi-calendar-event',    'label' => 'Event'],

@@ -60,7 +60,6 @@ $total_checkin = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as tota
                 <ul class="nav flex-column">
                     <li class="nav-item"><a class="nav-link text-white active" href="?p=dashboard_petugas"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
                     <li class="nav-item"><a class="nav-link text-white" href="?p=petugas_checkin"><i class="bi bi-qr-code-scan"></i> Scan Check-in</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="?p=admin_laporan"><i class="bi bi-file-earmark-text"></i> Laporan</a></li>
                 </ul>
             </div>
         </nav>
@@ -75,7 +74,7 @@ $total_checkin = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as tota
             </div>
 
             <!-- Welcome Banner -->
-            <div class="alert alert-info d-flex align-items-center mb-4" style="background: var(--info-gradient); color: white; border: none; border-radius: 16px;">
+            <div class="alert alert-primary d-flex align-items-center mb-4" style="background: var(--primary-gradient); color: white; border: none; border-radius: 16px;">
                 <i class="bi bi-person-circle fs-1 me-3"></i>
                 <div>
                     <h5 class="alert-heading mb-1">Selamat Datang, Petugas <?= htmlspecialchars($_SESSION['nama']) ?>! 👋</h5>

@@ -149,7 +149,7 @@ if (in_array($page_param, $petugas_pages) && (!isset($_SESSION['role']) || !in_a
             display: inline-flex; align-items: center; gap: .35rem;
         }
         .btn-login-nav {
-            background: var(--g-primary) !important; color: #fff !important;
+            background: var(--c-primary) !important; color: #fff !important;
             padding: .38rem 1.1rem !important; border-radius: 50px !important;
             font-weight: 600 !important; border: none !important;
         }
@@ -364,7 +364,7 @@ if (in_array($page_param, $petugas_pages) && (!isset($_SESSION['role']) || !in_a
         <div class="container">
             <a class="navbar-brand" href="?p=home">
                 <span class="brand-icon"><i class="bi bi-ticket-perforated-fill"></i></span>
-                EventTiket
+                YuiPass
             </a>
             <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <i class="bi bi-list fs-4" style="color:var(--txt-muted)"></i>
