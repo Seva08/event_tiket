@@ -55,11 +55,13 @@ if (in_array($page_param, $petugas_pages) && (!isset($_SESSION['role']) || !in_a
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EventTiket — Sistem Pemesanan Tiket Online</title>
+    <title>YuiPass — Sistem Pemesanan Tiket Online</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         /* ━━━━━━━━━━━━━━ DESIGN TOKENS ━━━━━━━━━━━━━━ */
         :root {
@@ -148,12 +150,12 @@ if (in_array($page_param, $petugas_pages) && (!isset($_SESSION['role']) || !in_a
             font-weight: 600; font-size: .8rem;
             display: inline-flex; align-items: center; gap: .35rem;
         }
-        .btn-login-nav {
+        .navbar .btn-login-nav {
             background: var(--c-primary) !important; color: #fff !important;
             padding: .38rem 1.1rem !important; border-radius: 50px !important;
             font-weight: 600 !important; border: none !important;
         }
-        .btn-login-nav:hover { opacity: .88; color: #fff !important; }
+        .navbar .btn-login-nav:hover { opacity: .88; color: #fff !important; background: var(--c-primary) !important; }
 
         /* ━━━━━━━━━━━━━━ SIDEBAR ━━━━━━━━━━━━━━ */
         .sidebar {
@@ -404,6 +406,7 @@ if (in_array($page_param, $petugas_pages) && (!isset($_SESSION['role']) || !in_a
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li><h6 class="dropdown-header" style="font-size:.72rem;letter-spacing:.5px"><?= strtoupper($_SESSION['role']) ?></h6></li>
                                 <li><hr class="dropdown-divider my-1"></li>
+                                <li><a class="dropdown-item" href="?p=profile"><i class="bi bi-person-lines-fill me-2"></i>Profil Saya</a></li>
                                 <li><a class="dropdown-item text-danger" href="?p=logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
                             </ul>
                         </li>

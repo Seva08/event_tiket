@@ -1,41 +1,168 @@
 <?php
-$result = null; $message = ''; $alert_class = '';
+$result = null;
+$message = '';
+$alert_class = '';
+
 if (isset($_POST['proses_checkin'])) {
     $kode = mysqli_real_escape_string($conn, $_POST['kode_tiket']);
-    $cek  = mysqli_query($conn, "SELECT a.*, u.nama, e.nama_event, t.nama_tiket FROM attendee a JOIN order_detail od ON a.id_detail = od.id_detail JOIN orders o ON od.id_order = o.id_order JOIN users u ON o.id_user = u.id_user JOIN tiket t ON od.id_tiket = t.id_tiket JOIN event e ON t.id_event = e.id_event WHERE a.kode_tiket = '$kode'");
+    $cek  = mysqli_query($conn, "SELECT a.*, u.nama, e.nama_event, e.tanggal, t.nama_tiket 
+                                FROM attendee a 
+                                JOIN order_detail od ON a.id_detail = od.id_detail 
+                                JOIN orders o ON od.id_order = o.id_order 
+                                JOIN users u ON o.id_user = u.id_user 
+                                JOIN tiket t ON od.id_tiket = t.id_tiket 
+                                JOIN event e ON t.id_event = e.id_event 
+                                WHERE a.kode_tiket = '$kode'");
     $data = mysqli_fetch_assoc($cek);
+
     if ($data) {
-        if ($data['status_checkin'] == 'sudah') { $message = "Tiket sudah pernah digunakan pada: " . $data['waktu_checkin']; $alert_class = 'warning'; }
-        else { mysqli_query($conn, "UPDATE attendee SET status_checkin='sudah', waktu_checkin=NOW() WHERE kode_tiket='$kode'"); $message = "Check-in Berhasil! Selamat datang, " . htmlspecialchars($data['nama']); $alert_class = 'success'; $result = $data; }
-    } else { $message = "Kode Tiket Tidak Terdaftar!"; $alert_class = 'danger'; }
+        $today = date('Y-m-d');
+        $event_date = date('Y-m-d', strtotime($data['tanggal']));
+        
+        if ($event_date != $today) {
+            $_SESSION['alert'] = [
+                'type' => 'error',
+                'title' => 'Gagal Check-in',
+                'text' => 'Event ini dijadwalkan pada ' . date('d M Y', strtotime($data['tanggal'])) . ', bukan hari ini.'
+            ];
+        } elseif ($data['status_checkin'] == 'sudah') { 
+            $_SESSION['alert'] = [
+                'type' => 'warning',
+                'title' => 'Sudah Check-in',
+                'text' => 'Tiket ini sudah digunakan pada: ' . $data['waktu_checkin']
+            ];
+        } else { 
+            mysqli_query($conn, "UPDATE attendee SET status_checkin='sudah', waktu_checkin=NOW() WHERE kode_tiket='$kode'"); 
+            $_SESSION['alert'] = [
+                'type' => 'success',
+                'title' => 'Berhasil!',
+                'text' => 'Selamat datang, ' . $data['nama']
+            ];
+            $_SESSION['last_checkin_admin'] = $data;
+        }
+    } else { 
+        $_SESSION['alert'] = [
+            'type' => 'error',
+            'title' => 'Tidak Terdaftar',
+            'text' => 'Kode Tiket ' . $kode . ' tidak ditemukan!'
+        ];
+    }
+    header("Location: ?p=admin_checkin");
+    exit;
 }
+$result = isset($_SESSION['last_checkin_admin']) ? $_SESSION['last_checkin_admin'] : null;
+unset($_SESSION['last_checkin_admin']);
 ?>
 <div class="container-fluid"><div class="row">
     <?php include 'pages/admin/_sidebar.php'; ?>
     <main class="col-md-10 ms-sm-auto px-md-4 py-4">
-        <h2 class="mb-4"><i class="bi bi-qr-code-scan"></i> Check-in Tiket</h2>
-        <div class="row justify-content-center"><div class="col-md-6">
-            <div class="card shadow"><div class="card-header bg-primary text-white text-center"><h4 class="mb-0"><i class="bi bi-qr-code-scan"></i> Proses Check-in</h4></div>
-            <div class="card-body">
-                <?php if ($message): ?><div class="alert alert-<?= $alert_class ?> alert-dismissible fade show"><i class="bi bi-<?= $alert_class=='success'?'check-circle':($alert_class=='warning'?'exclamation-triangle':'x-circle') ?>"></i> <?= $message ?><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div><?php endif; ?>
-                <form method="POST" class="mt-3">
-                    <div class="mb-3"><label class="form-label"><i class="bi bi-ticket-perforated"></i> Kode Tiket</label>
-                    <div class="input-group input-group-lg"><span class="input-group-text"><i class="bi bi-upc-scan"></i></span><input type="text" name="kode_tiket" class="form-control text-uppercase" placeholder="Contoh: TKT-ABCD1234" required autofocus><button class="btn btn-primary" type="submit" name="proses_checkin"><i class="bi bi-check-lg"></i> Check-in</button></div>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="page-title"><i class="bi bi-qr-code-scan"></i> Check-in Tiket</h2>
+                <p class="text-muted mb-0">Scan atau masukkan kode tiket pengunjung untuk validasi</p>
+            </div>
+            <span class="badge bg-primary fs-6 px-3 py-2"><i class="bi bi-calendar3"></i> <?= date('d M Y') ?></span>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card border-0 shadow" style="border-radius: var(--r-lg, 16px); overflow: hidden;">
+                    <div class="card-header bg-primary text-white text-center py-4" style="border: none;">
+                        <div class="bg-white bg-opacity-25 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 70px; height: 70px;">
+                            <i class="bi bi-qr-code-scan fs-1"></i>
+                        </div>
+                        <h4 class="mb-0 fw-bold">Proses Check-in</h4>
                     </div>
-                </form>
-                <?php if ($result && $alert_class == 'success'): ?>
-                <div class="card mt-4 border-success"><div class="card-body">
-                    <h5 class="card-title text-success"><i class="bi bi-person-check"></i> Detail Pengunjung</h5>
-                    <table class="table table-sm">
-                        <tr><td>Nama</td><td>: <?= htmlspecialchars($result['nama']) ?></td></tr>
-                        <tr><td>Event</td><td>: <?= htmlspecialchars($result['nama_event']) ?></td></tr>
-                        <tr><td>Tiket</td><td>: <?= htmlspecialchars($result['nama_tiket']) ?></td></tr>
-                        <tr><td>Kode</td><td>: <?= $result['kode_tiket'] ?></td></tr>
-                    </table>
-                </div></div>
-                <?php endif; ?>
-            </div></div>
-            <div class="text-center mt-3"><a href="?p=dashboard_admin" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Kembali ke Dashboard</a></div>
-        </div></div>
+                    <div class="card-body p-4 bg-light">
+
+                        <form method="POST" class="mt-2">
+                            <div class="mb-4">
+                                <label class="form-label fw-bold text-muted text-uppercase" style="font-size: 0.85rem; letter-spacing: 0.5px;">Masukkan Kode Tiket</label>
+                                <div class="input-group input-group-lg" style="box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-radius: var(--r-md, 8px); overflow: hidden;">
+                                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-upc-scan"></i></span>
+                                    <input type="text" name="kode_tiket" class="form-control border-start-0 ps-0 fw-bold text-uppercase" placeholder="Contoh: TKT-ABCD1234" required autofocus style="box-shadow: none;">
+                                    <button class="btn btn-primary fw-bold px-4" type="submit" name="proses_checkin">
+                                        <i class="bi bi-check-lg me-1"></i> Check-in
+                                    </button>
+                                </div>
+                                <div class="form-text mt-2"><i class="bi bi-info-circle me-1"></i>Pastikan kode tiket sesuai dengan yang tertera pada e-tiket pengunjung.</div>
+                            </div>
+                        </form>
+
+                        <?php if ($result): ?>
+                            <div class="card mt-4 border-0" style="background: #e0f2fe; border-radius: var(--r-md, 8px);">
+                                <div class="card-body p-4">
+                                    <div class="d-flex align-items-center mb-3 pb-3 border-bottom border-primary border-opacity-25">
+                                        <i class="bi bi-person-check-fill text-primary fs-2 me-3"></i>
+                                        <div>
+                                            <h5 class="card-title text-primary fw-bold mb-0">Check-in Berhasil!</h5>
+                                            <small class="text-primary opacity-75">Detail Tiket Pengunjung</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row g-3">
+                                        <div class="col-6">
+                                            <small class="text-muted d-block mb-1 text-uppercase" style="font-size:0.75rem;">Nama Pengunjung</small>
+                                            <div class="fw-bold text-dark"><?= htmlspecialchars($result['nama']) ?></div>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted d-block mb-1 text-uppercase" style="font-size:0.75rem;">Kode Tiket</small>
+                                            <div class="fw-bold font-monospace text-primary"><?= $result['kode_tiket'] ?></div>
+                                        </div>
+                                        <div class="col-12">
+                                            <small class="text-muted d-block mb-1 text-uppercase" style="font-size:0.75rem;">Nama Event</small>
+                                            <div class="fw-bold text-dark"><?= htmlspecialchars($result['nama_event']) ?></div>
+                                        </div>
+                                        <div class="col-12">
+                                            <small class="text-muted d-block mb-1 text-uppercase" style="font-size:0.75rem;">Tipe Tiket</small>
+                                            <div class="badge bg-primary bg-opacity-25 text-primary px-3 py-2 fs-6 rounded-pill">
+                                                <?= htmlspecialchars($result['nama_tiket']) ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <a href="?p=dashboard_admin" class="btn btn-outline-secondary rounded-pill px-4 py-2 fw-semibold">
+                        <i class="bi bi-arrow-left me-2"></i> Kembali ke Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
     </main>
 </div></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const input = document.querySelector('input[name="kode_tiket"]');
+    if (!input) return;
+
+    // Selalu fokus ke input kode tiket
+    input.focus();
+    
+    // Jika user klik di mana saja, kembalikan fokus ke input (untuk memudahkan scan terus menerus)
+    document.addEventListener('click', function() {
+        input.focus();
+    });
+
+    // Fungsi Auto Enter / Auto Submit
+    let scanTimer;
+    input.addEventListener('input', function() {
+        // Bersihkan timer sebelumnya
+        clearTimeout(scanTimer);
+        
+        // Kode tiket kita formatnya TKT-XXXXXXXX (12 karakter)
+        // Jika panjang input mencapai 12, otomatis klik tombol check-in
+        if (this.value.length >= 12) {
+            scanTimer = setTimeout(() => {
+                const btn = document.querySelector('button[name="proses_checkin"]');
+                if (btn) btn.click();
+            }, 100); // Delay kecil untuk memastikan scanner selesai input
+        }
+    });
+});
+</script>

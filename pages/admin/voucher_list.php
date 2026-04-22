@@ -1,7 +1,13 @@
 <?php
 if (isset($_GET['hapus'])) {
     mysqli_query($conn, "DELETE FROM voucher WHERE id_voucher = " . (int)$_GET['hapus']);
-    echo "<script>alert('Voucher berhasil dihapus!'); window.location='?p=admin_voucher';</script>";
+    $_SESSION['alert'] = [
+        'type' => 'success',
+        'title' => 'Dihapus',
+        'text' => 'Voucher berhasil dihapus!'
+    ];
+    header("Location: ?p=admin_voucher");
+    exit;
 }
 $search      = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
 $where       = $search ? "WHERE kode_voucher LIKE '%$search%'" : '';
@@ -48,7 +54,7 @@ $query       = mysqli_query($conn, "SELECT * FROM voucher $where ORDER BY id_vou
                                 <td class="text-center"><span class="badge bg-<?= $status_badge ?> px-3 py-2"><?= ucfirst($row['status']) ?></span></td>
                                 <td class="text-center">
                                     <a href="?p=admin_voucher_edit&id=<?= $row['id_voucher'] ?>" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i></a>
-                                    <a href="?p=admin_voucher&hapus=<?= $row['id_voucher'] ?>&page=<?= $cur_page ?>&search=<?= urlencode($search) ?>" class="btn btn-danger btn-sm" onclick="return confirm('Yakin hapus?')"><i class="bi bi-trash"></i></a>
+                                    <a href="?p=admin_voucher&hapus=<?= $row['id_voucher'] ?>&page=<?= $cur_page ?>&search=<?= urlencode($search) ?>" class="btn btn-danger btn-sm btn-hapus"><i class="bi bi-trash"></i></a>
                                 </td>
                             </tr>
                             <?php endwhile; ?>

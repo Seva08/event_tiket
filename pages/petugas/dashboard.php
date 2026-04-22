@@ -1,11 +1,5 @@
 <?php
-// Proses update status order
-if (isset($_POST['update_status'])) {
-    $id_order = (int)$_POST['id_order'];
-    $status = mysqli_real_escape_string($conn, $_POST['status']);
-    mysqli_query($conn, "UPDATE orders SET status='$status' WHERE id_order=$id_order");
-    echo "<script>alert('Status order berhasil diupdate!'); window.location='?p=dashboard_petugas';</script>";
-}
+
 
 // Proses check-in manual
 if (isset($_POST['checkin_manual'])) {
@@ -20,35 +14,14 @@ if (isset($_POST['checkin_manual'])) {
     }
 }
 
-// Search & Pagination untuk orders
-$search = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
-$where = $search ? "WHERE o.id_order LIKE '%$search%' OR u.nama LIKE '%$search%' OR u.email LIKE '%$search%'" : '';
 
-$limit = 10;
-$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$offset = ($page - 1) * $limit;
-
-// Total orders
-$total_data = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM orders o JOIN users u ON o.id_user = u.id_user $where"))['total'];
-$total_pages = ceil($total_data / $limit);
-
-// Query orders dengan detail
-$orders = mysqli_query($conn, "SELECT o.*, u.nama, u.email,
-    (SELECT SUM(od.qty) FROM order_detail od WHERE od.id_order = o.id_order) as total_qty,
-    v.kode_voucher, v.potongan
-    FROM orders o
-    JOIN users u ON o.id_user = u.id_user
-    LEFT JOIN voucher v ON o.id_voucher = v.id_voucher
-    $where
-    ORDER BY o.tanggal_order DESC
-    LIMIT $limit OFFSET $offset");
 
 // Statistik
 $total_order = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM orders"))['total'];
 $pending = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM orders WHERE status='pending'"))['total'];
 $paid = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM orders WHERE status='paid'"))['total'];
 $cancelled = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM orders WHERE status='cancelled'"))['total'];
-$total_checkin = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM attendee WHERE status_checkin='sudah'"))['total'];
+$total_checkin = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM attendee WHERE status_checkin='sudah' AND DATE(waktu_checkin) = CURDATE()"))['total'];
 ?>
 
 <div class="container-fluid">
@@ -74,80 +47,81 @@ $total_checkin = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as tota
             </div>
 
             <!-- Welcome Banner -->
-            <div class="alert alert-primary d-flex align-items-center mb-4" style="background: var(--primary-gradient); color: white; border: none; border-radius: 16px;">
-                <i class="bi bi-person-circle fs-1 me-3"></i>
-                <div>
-                    <h5 class="alert-heading mb-1">Selamat Datang, Petugas <?= htmlspecialchars($_SESSION['nama']) ?>! 👋</h5>
-                    <p class="mb-0">Anda dapat mengelola status order dan melakukan check-in pengunjung.</p>
+            <div class="card border-0 shadow-sm mb-4 bg-primary text-white" style="border-radius: var(--r-lg, 16px); background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);">
+                <div class="card-body p-4 d-flex align-items-center">
+                    <div class="bg-white bg-opacity-25 rounded-circle p-3 me-4 d-none d-sm-block">
+                        <i class="bi bi-person-vcard fs-1"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-1">Selamat Datang, Petugas <?= htmlspecialchars($_SESSION['nama']) ?>! 👋</h4>
+                        <p class="mb-0 text-white text-opacity-75">Pantau statistik kehadiran event dan lakukan validasi tiket masuk pengunjung di sini.</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- Statistik Cards -->
-            <div class="row g-4 mb-4">
-                <div class="col-md-2">
-                    <div class="card stat-card primary h-100">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start">
+            <!-- Statistik Check-in Utama -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm" style="border-radius: var(--r-lg, 16px); background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <p class="card-text mb-1 opacity-75"><i class="bi bi-receipt me-2"></i>Total Order</p>
-                                    <h2 class="mb-0 fw-bold"><?= $total_order ?></h2>
+                                    <h6 class="text-uppercase fw-bold text-white text-opacity-75 mb-1" style="letter-spacing: 1px;"><i class="bi bi-qr-code-scan me-2"></i>Total Check-in Hari Ini</h6>
+                                    <h1 class="display-4 fw-bold mb-0"><?= $total_checkin ?> <span class="fs-4 fw-normal text-white text-opacity-75">Orang</span></h1>
                                 </div>
-                                <i class="bi bi-receipt fs-3 opacity-50"></i>
+                                <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center d-none d-sm-flex" style="width: 80px; height: 80px;">
+                                    <i class="bi bi-person-check-fill fs-1"></i>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-2">
-                    <div class="card stat-card warning h-100">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <p class="card-text mb-1 opacity-75"><i class="bi bi-clock me-2"></i>Pending</p>
-                                    <h2 class="mb-0 fw-bold"><?= $pending ?></h2>
-                                </div>
-                                <i class="bi bi-clock fs-3 opacity-50"></i>
+            </div>
+
+            <!-- Statistik Order Pendukung -->
+            <h6 class="fw-bold text-muted text-uppercase mb-3" style="letter-spacing: 1px; font-size: 0.8rem;">Statistik Transaksi Keseluruhan</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-3 col-6">
+                    <div class="card border-0 shadow-sm h-100" style="border-radius: var(--r-md, 8px); border-left: 4px solid #3b82f6 !important;">
+                        <div class="card-body p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <small class="text-muted fw-bold text-uppercase" style="font-size: 0.75rem;">Total Order</small>
+                                <div class="bg-primary bg-opacity-10 rounded p-1"><i class="bi bi-receipt text-primary"></i></div>
                             </div>
+                            <h3 class="fw-bold mb-0 text-dark"><?= $total_order ?></h3>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-2">
-                    <div class="card stat-card success h-100">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <p class="card-text mb-1 opacity-75"><i class="bi bi-check-circle me-2"></i>Paid</p>
-                                    <h2 class="mb-0 fw-bold"><?= $paid ?></h2>
-                                </div>
-                                <i class="bi bi-check-circle fs-3 opacity-50"></i>
+                <div class="col-md-3 col-6">
+                    <div class="card border-0 shadow-sm h-100" style="border-radius: var(--r-md, 8px); border-left: 4px solid #f59e0b !important;">
+                        <div class="card-body p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <small class="text-muted fw-bold text-uppercase" style="font-size: 0.75rem;">Pending</small>
+                                <div class="bg-warning bg-opacity-10 rounded p-1"><i class="bi bi-clock text-warning"></i></div>
                             </div>
+                            <h3 class="fw-bold mb-0 text-dark"><?= $pending ?></h3>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-2">
-                    <div class="card stat-card danger h-100">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <p class="card-text mb-1 opacity-75"><i class="bi bi-x-circle me-2"></i>Cancelled</p>
-                                    <h2 class="mb-0 fw-bold"><?= $cancelled ?></h2>
-                                </div>
-                                <i class="bi bi-x-circle fs-3 opacity-50"></i>
+                <div class="col-md-3 col-6">
+                    <div class="card border-0 shadow-sm h-100" style="border-radius: var(--r-md, 8px); border-left: 4px solid #10b981 !important;">
+                        <div class="card-body p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <small class="text-muted fw-bold text-uppercase" style="font-size: 0.75rem;">Paid</small>
+                                <div class="bg-success bg-opacity-10 rounded p-1"><i class="bi bi-check-circle text-success"></i></div>
                             </div>
+                            <h3 class="fw-bold mb-0 text-dark"><?= $paid ?></h3>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="card stat-card primary h-100">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <p class="card-text mb-1 opacity-75"><i class="bi bi-qr-code-scan me-2"></i>Total Check-in</p>
-                                    <h2 class="mb-0 fw-bold"><?= $total_checkin ?></h2>
-                                </div>
-                                <div class="bg-white bg-opacity-20 rounded-circle p-2">
-                                    <i class="bi bi-person-check fs-3"></i>
-                                </div>
+                <div class="col-md-3 col-6">
+                    <div class="card border-0 shadow-sm h-100" style="border-radius: var(--r-md, 8px); border-left: 4px solid #ef4444 !important;">
+                        <div class="card-body p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <small class="text-muted fw-bold text-uppercase" style="font-size: 0.75rem;">Cancelled</small>
+                                <div class="bg-danger bg-opacity-10 rounded p-1"><i class="bi bi-x-circle text-danger"></i></div>
                             </div>
+                            <h3 class="fw-bold mb-0 text-dark"><?= $cancelled ?></h3>
                         </div>
                     </div>
                 </div>
@@ -192,132 +166,15 @@ $total_checkin = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as tota
                                 <div>
                                     <h5 class="mb-2">Panduan Petugas</h5>
                                     <p class="mb-0 opacity-75">
-                                        • Update status order (pending → paid)<br>
-                                        • Lakukan check-in manual atau scan QR<br>
-                                        • Pantau statistik harian
+                                        • Lakukan check-in menggunakan Scan QR<br>
+                                        • Lakukan check-in manual menggunakan Kode Tiket<br>
+                                        • Pantau statistik pengunjung dan kehadiran
                                     </p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Daftar Order -->
-            <div class="table-container">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="mb-0"><i class="bi bi-receipt"></i> Daftar Order</h5>
-                    <span class="badge bg-primary fs-6">Total: <?= $total_data ?> order</span>
-                </div>
-
-                <!-- Search -->
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <form method="GET" class="row g-3">
-                            <div class="col-md-10">
-                                <div class="input-group">
-                                    <span class="input-group-text bg-primary text-white"><i class="bi bi-search"></i></span>
-                                    <input type="text" name="search" class="form-control" placeholder="Cari order by ID, nama, atau email..." value="<?= htmlspecialchars($search) ?>">
-                                </div>
-                            </div>
-                            <div class="col-md-2">
-                                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i> Cari</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <?php if (mysqli_num_rows($orders) > 0): ?>
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead>
-                                <tr>
-                                    <th class="text-center">ID</th>
-                                    <th>Customer</th>
-                                    <th class="text-center">Qty</th>
-                                    <th>Total</th>
-                                    <th>Voucher</th>
-                                    <th class="text-center">Status</th>
-                                    <th class="text-center">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php $no = $offset + 1; while ($row = mysqli_fetch_assoc($orders)):
-                                    $status_badge = $row['status'] == 'paid' ? 'success' : ($row['status'] == 'pending' ? 'warning' : 'danger');
-                                ?>
-                                <tr>
-                                    <td class="text-center fw-bold text-muted">#<?= $row['id_order'] ?></td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
-                                                <i class="bi bi-person text-primary"></i>
-                                            </div>
-                                            <div>
-                                                <h6 class="mb-0 fw-bold"><?= htmlspecialchars($row['nama']) ?></h6>
-                                                <small class="text-muted"><?= htmlspecialchars($row['email']) ?></small>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="text-center"><span class="badge bg-info"><?= $row['total_qty'] ?? 0 ?> tiket</span></td>
-                                    <td class="fw-bold">Rp <?= number_format($row['total'], 0, ',', '.') ?></td>
-                                    <td>
-                                        <?php if ($row['kode_voucher']): ?>
-                                            <span class="badge bg-warning text-dark"><?= $row['kode_voucher'] ?> (-Rp <?= number_format($row['potongan']) ?>)</span>
-                                        <?php else: ?>
-                                            <span class="text-muted">-</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td class="text-center">
-                                        <form method="POST" class="d-flex gap-2 justify-content-center">
-                                            <input type="hidden" name="id_order" value="<?= $row['id_order'] ?>">
-                                            <select name="status" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
-                                                <option value="pending" <?= $row['status'] == 'pending' ? 'selected' : '' ?>>Pending</option>
-                                                <option value="paid" <?= $row['status'] == 'paid' ? 'selected' : '' ?>>Paid</option>
-                                                <option value="cancelled" <?= $row['status'] == 'cancelled' ? 'selected' : '' ?>>Cancelled</option>
-                                            </select>
-                                            <button type="submit" name="update_status" class="btn btn-sm btn-primary" title="Update">
-                                                <i class="bi bi-check"></i>
-                                            </button>
-                                        </form>
-                                    </td>
-                                    <td class="text-center">
-                                        <a href="?p=admin_order_detail&id=<?= $row['id_order'] ?>" class="btn btn-info btn-sm" title="Detail">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                <?php endwhile; ?>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Pagination -->
-                    <?php if ($total_pages > 1): ?>
-                    <nav aria-label="Page navigation" class="mt-4">
-                        <ul class="pagination justify-content-center">
-                            <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
-                                <a class="page-link" href="?page=<?= $page-1 ?>&search=<?= $search ?>"><i class="bi bi-chevron-left"></i></a>
-                            </li>
-                            <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-                                <li class="page-item <?= $i == $page ? 'active' : '' ?>">
-                                    <a class="page-link" href="?page=<?= $i ?>&search=<?= $search ?>"><?= $i ?></a>
-                                </li>
-                            <?php endfor; ?>
-                            <li class="page-item <?= $page >= $total_pages ? 'disabled' : '' ?>">
-                                <a class="page-link" href="?page=<?= $page+1 ?>&search=<?= $search ?>"><i class="bi bi-chevron-right"></i></a>
-                            </li>
-                        </ul>
-                    </nav>
-                    <?php endif; ?>
-
-                <?php else: ?>
-                    <div class="text-center py-5">
-                        <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
-                            <i class="bi bi-receipt fs-1 text-muted"></i>
-                        </div>
-                        <h5 class="text-muted">Tidak ada order ditemukan</h5>
-                    </div>
-                <?php endif; ?>
             </div>
         </main>
     </div>

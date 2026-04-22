@@ -3,7 +3,13 @@
 if (isset($_GET['hapus'])) {
     $id_venue = (int)$_GET['hapus'];
     mysqli_query($conn, "DELETE FROM venue WHERE id_venue = $id_venue");
-    echo "<script>alert('Venue berhasil dihapus!'); window.location='?p=admin_venue';</script>";
+    $_SESSION['alert'] = [
+        'type' => 'success',
+        'title' => 'Dihapus',
+        'text' => 'Venue berhasil dihapus!'
+    ];
+    header("Location: ?p=admin_venue");
+    exit;
 }
 
 $search      = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
@@ -76,7 +82,7 @@ $query       = mysqli_query($conn, "SELECT * FROM venue $where ORDER BY nama_ven
                                         <td class="text-center"><span class="badge bg-info"><?= number_format($row['kapasitas']) ?> orang</span></td>
                                         <td class="text-center">
                                             <a href="?p=admin_venue_edit&id=<?= $row['id_venue'] ?>" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i></a>
-                                            <a href="?p=admin_venue&hapus=<?= $row['id_venue'] ?>&page=<?= $cur_page ?>&search=<?= urlencode($search) ?>" class="btn btn-danger btn-sm" onclick="return confirm('Yakin hapus venue ini?')"><i class="bi bi-trash"></i></a>
+                                            <a href="?p=admin_venue&hapus=<?= $row['id_venue'] ?>&page=<?= $cur_page ?>&search=<?= urlencode($search) ?>" class="btn btn-danger btn-sm btn-hapus"><i class="bi bi-trash"></i></a>
                                         </td>
                                     </tr>
                                 <?php endwhile; ?>

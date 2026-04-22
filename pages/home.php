@@ -1,3 +1,14 @@
+<?php
+$search = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
+$date_filter = isset($_GET['date']) ? mysqli_real_escape_string($conn, $_GET['date']) : '';
+
+$where = "WHERE (e.nama_event LIKE '%$search%' OR v.nama_venue LIKE '%$search%')";
+if ($date_filter) {
+    $where .= " AND e.tanggal = '$date_filter'";
+}
+
+$query = mysqli_query($conn, "SELECT e.*, v.nama_venue, v.alamat FROM event e JOIN venue v ON e.id_venue = v.id_venue $where ORDER BY e.tanggal DESC");
+?>
 <!-- ════════════ HERO ════════════ -->
 <div class="hero-section text-white" style="padding: 5.5rem 0 4.5rem;">
     <div class="container position-relative" style="z-index:1;">
@@ -9,7 +20,7 @@
                 </span>
                 <h1 class="display-4 fw-800 mb-3 lh-sm" style="font-weight:800;letter-spacing:-.5px;">
                     Pesan Tiket Event<br>
-                    <span style="opacity:.85;">Favorit Kamu 🎟️</span>
+                    <span style="opacity:.85;">Favorit Kamu</span>
                 </h1>
                 <p class="mb-4 lh-lg" style="font-size:1.05rem;opacity:.88;max-width:480px;">
                     Temukan konser, festival, workshop, dan ratusan event seru lainnya — semua dalam satu platform yang mudah dan aman.
@@ -35,6 +46,22 @@
                             <i class="bi bi-calendar-event me-2"></i>Lihat Event
                         </a>
                     <?php endif; ?>
+                </div>
+
+                <!-- Search & Filter -->
+                <div class="mt-4 p-2 bg-white rounded-pill shadow-lg d-inline-flex align-items-center w-100" style="max-width: 600px; border: 1px solid rgba(255,255,255,0.2);">
+                    <form method="GET" class="d-flex w-100 gap-2 px-2">
+                        <input type="hidden" name="p" value="home">
+                        <div class="flex-grow-1 position-relative border-end pe-2">
+                            <i class="bi bi-search position-absolute text-muted" style="left: 10px; top: 50%; transform: translateY(-50%);"></i>
+                            <input type="text" name="search" class="form-control border-0 bg-transparent shadow-none" placeholder="Cari event seru..." value="<?= htmlspecialchars($search) ?>" style="padding-left: 35px;">
+                        </div>
+                        <div class="position-relative border-end pe-2" style="width: 160px;">
+                            <i class="bi bi-calendar-event position-absolute text-muted" style="left: 10px; top: 50%; transform: translateY(-50%);"></i>
+                            <input type="date" name="date" class="form-control border-0 bg-transparent shadow-none" value="<?= htmlspecialchars($date_filter) ?>" style="padding-left: 35px; font-size: 0.85rem;">
+                        </div>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4">Cari</button>
+                    </form>
                 </div>
 
                 <!-- Quick stats -->
@@ -99,6 +126,71 @@
         <?php endforeach; ?>
     </div>
 
+    <!-- ════════════ VOUCHERS ════════════ -->
+    <div class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="page-title mb-1"><i class="bi bi-tags me-2" style="color:var(--c-primary)"></i>Promo & Voucher</h2>
+                <p class="text-muted mb-0" style="font-size:.87rem;">Gunakan kode voucher di bawah ini saat checkout untuk mendapatkan potongan harga!</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <?php
+            $user_id = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : 0;
+            $q_voucher = mysqli_query($conn, "SELECT v.*, 
+                (SELECT COUNT(*) FROM orders o WHERE o.id_user = $user_id AND o.id_voucher = v.id_voucher AND o.status != 'cancel') as is_used
+                FROM voucher v WHERE v.status = 'aktif' ORDER BY v.potongan DESC");
+            
+            if (mysqli_num_rows($q_voucher) > 0):
+                while ($v = mysqli_fetch_assoc($q_voucher)):
+                    $is_used = $v['is_used'] > 0;
+                    $unlimited = $v['kuota'] == 0;
+            ?>
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 position-relative" style="border-radius:18px; background: #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.05); overflow: hidden; border: 1px dashed #dee2e6 !important;">
+                    <div class="d-flex h-100">
+                        <!-- Left Part (Discount) -->
+                        <div class="p-3 text-white d-flex flex-column justify-content-center align-items-center text-center" 
+                             style="width: 110px; background: <?= $is_used ? 'var(--bs-secondary)' : 'var(--g-primary)' ?>;">
+                            <small style="font-size: 0.65rem; text-transform: uppercase; opacity: 0.8;">Diskon</small>
+                            <div class="fw-bold" style="font-size: 1.1rem;">Rp</div>
+                            <div class="fw-800" style="font-size: 1.4rem; font-weight: 800;"><?= number_format($v['potongan']/1000, 0) ?>k</div>
+                        </div>
+                        
+                        <!-- Right Part (Details) -->
+                        <div class="p-3 flex-grow-1 d-flex flex-column justify-content-center">
+                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                <span class="badge <?= $is_used ? 'bg-secondary' : 'bg-primary' ?> bg-opacity-10 text-<?= $is_used ? 'secondary' : 'primary' ?> mb-2" style="font-size: 0.7rem; border-radius: 6px;">
+                                    <?= $unlimited ? 'Unlimited' : 'Sisa ' . $v['kuota'] ?>
+                                </span>
+                                <?php if($is_used): ?>
+                                    <span class="text-success" style="font-size: 0.75rem; font-weight: 600;"><i class="bi bi-check-circle-fill me-1"></i>Terpakai</span>
+                                <?php endif; ?>
+                            </div>
+                            <h6 class="fw-bold mb-2 text-dark font-monospace" style="letter-spacing: 1px;"><?= $v['kode_voucher'] ?></h6>
+                            <div class="d-flex align-items-center justify-content-between mt-auto">
+                                <small class="text-muted" style="font-size: 0.7rem;">Berlaku Semua Tiket</small>
+                                <?php if(!$is_used): ?>
+                                    <button class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.7rem; border-radius: 50px;" onclick="navigator.clipboard.writeText('<?= $v['kode_voucher'] ?>'); alert('Kode <?= $v['kode_voucher'] ?> disalin!')">Copy</button>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Decorative Circles -->
+                    <div style="position: absolute; width: 20px; height: 20px; background: #f8fafc; border-radius: 50%; left: 100px; top: -10px; border-bottom: 1px dashed #dee2e6;"></div>
+                    <div style="position: absolute; width: 20px; height: 20px; background: #f8fafc; border-radius: 50%; left: 100px; bottom: -10px; border-top: 1px dashed #dee2e6;"></div>
+                </div>
+            </div>
+            <?php endwhile; else: ?>
+            <div class="col-12 text-center py-4 bg-light rounded-4">
+                <p class="text-muted mb-0"><i class="bi bi-info-circle me-1"></i> Belum ada promo tersedia saat ini.</p>
+            </div>
+            <?php endif; ?>
+        </div>
+    </div>
+
     <!-- ════════════ EVENT LIST ════════════ -->
     <div id="events">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -107,62 +199,96 @@
                 <p class="text-muted mb-0" style="font-size:.87rem;">Pilih event favoritmu dan langsung pesan tiketnya!</p>
             </div>
             <span class="badge px-3 py-2" style="background:var(--g-primary);font-size:.8rem;border-radius:50px;">
-                <?= $total_e ?> event aktif
+                <?= $total_e ?> Event
             </span>
         </div>
 
         <div class="row g-4">
             <?php
-            $query = mysqli_query($conn, "SELECT e.*, v.nama_venue, v.alamat FROM event e JOIN venue v ON e.id_venue = v.id_venue ORDER BY e.tanggal DESC");
             if (mysqli_num_rows($query) > 0):
                 while ($d = mysqli_fetch_assoc($query)):
                     $tanggal   = date('d M Y', strtotime($d['tanggal']));
                     $tgl_short = date('d', strtotime($d['tanggal']));
                     $bln_short = date('M Y', strtotime($d['tanggal']));
+                    $is_passed = strtotime($d['tanggal']) < strtotime('today');
             ?>
             <div class="col-md-4">
-                <div class="card card-event h-100">
-                    <?php $bg_image = $d['gambar'] ? "url('uploads/{$d['gambar']}')" : "var(--g-primary)"; ?>
-                    <!-- Banner -->
-                    <div class="card-header position-relative" style="padding:1.4rem 1.4rem 1rem; background: <?= $bg_image ?>; background-size: cover; background-position: center; border-radius: var(--r-lg) var(--r-lg) 0 0;">
-                        <?php if($d['gambar']): ?>
-                            <div style="position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); border-radius: var(--r-lg) var(--r-lg) 0 0;"></div>
-                        <?php endif; ?>
-                        <div class="d-flex justify-content-between align-items-start position-relative" style="z-index:1; color:#fff;">
-                            <div>
-                                <span class="badge mb-2 text-white"
-                                      style="background:rgba(255,255,255,.2);backdrop-filter:blur(4px);border-radius:50px;font-size:.72rem;">
-                                    <i class="bi bi-calendar3 me-1"></i><?= $tanggal ?>
+                <div class="card card-event h-100 <?= $is_passed ? 'opacity-75' : '' ?>">
+                    <?php if($d['gambar']): ?>
+                        <!-- TAMPILAN BARU (ADA GAMBAR) -->
+                        <!-- Banner Image (16:9) -->
+                        <div style="position:relative; width:100%; padding-top:56.25%; overflow:hidden; border-radius: var(--r-xl) var(--r-xl) 0 0;">
+                            <img src="uploads/<?= $d['gambar'] ?>" alt="<?= htmlspecialchars($d['nama_event']) ?>" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; <?= $is_passed ? 'filter: grayscale(100%);' : '' ?>">
+                            <!-- Floating Date Badge -->
+                            <div style="position:absolute; top:15px; right:15px; background:rgba(255,255,255,0.95); backdrop-filter:blur(4px); padding:0.5rem 0.8rem; border-radius:12px; text-align:center; box-shadow:0 4px 15px rgba(0,0,0,0.15);">
+                                <div style="color:var(--c-primary); font-weight:800; font-size:1.3rem; line-height:1;"><?= $tgl_short ?></div>
+                                <div style="color:var(--txt-muted); font-size:0.65rem; font-weight:700; text-transform:uppercase; margin-top:2px;"><?= $bln_short ?></div>
+                            </div>
+                            <?php if($is_passed): ?>
+                            <div style="position:absolute; top:15px; left:15px; background:var(--c-danger); color:white; padding:0.3rem 0.8rem; border-radius:50px; font-size:0.75rem; font-weight:bold; box-shadow:0 4px 15px rgba(0,0,0,0.2);">
+                                Selesai
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                        <!-- Body -->
+                        <div class="card-body px-4 py-4">
+                            <h5 class="fw-bold mb-3 lh-sm" style="color:var(--txt); font-size:1.1rem;"><?= htmlspecialchars($d['nama_event']) ?></h5>
+                            <div class="d-flex align-items-start gap-2 mb-1">
+                                <i class="bi bi-geo-alt-fill mt-1" style="color:var(--c-danger);font-size:.9rem;"></i>
+                                <div>
+                                    <div class="fw-bold" style="font-size:.87rem;color:var(--txt);"><?= htmlspecialchars($d['nama_venue']) ?></div>
+                                    <div class="text-muted" style="font-size:.8rem;"><?= htmlspecialchars($d['alamat']) ?></div>
+                                </div>
+                            </div>
+                        </div>
+                    <?php else: ?>
+                        <!-- TAMPILAN LAMA (TIDAK ADA GAMBAR) -->
+                        <div class="card-header position-relative <?= $is_passed ? 'bg-secondary' : '' ?>" style="padding:1.4rem 1.4rem 1rem; <?= !$is_passed ? 'background: var(--g-primary);' : '' ?> background-size: cover; background-position: center; border-radius: var(--r-lg) var(--r-lg) 0 0;">
+                            <div class="d-flex justify-content-between align-items-start position-relative" style="z-index:1; color:#fff;">
+                                <div>
+                                    <span class="badge mb-2 text-white"
+                                          style="background:rgba(255,255,255,.2);backdrop-filter:blur(4px);border-radius:50px;font-size:.72rem;">
+                                        <i class="bi bi-calendar3 me-1"></i><?= $tanggal ?>
+                                    </span>
+                                    <?php if($is_passed): ?>
+                                    <span class="badge mb-2 text-white ms-1 bg-danger" style="border-radius:50px;font-size:.72rem;">Selesai</span>
+                                    <?php endif; ?>
+                                    <h5 class="mb-0 fw-bold lh-sm text-white" style="font-size:1rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                                        <?= htmlspecialchars($d['nama_event']) ?>
+                                    </h5>
+                                </div>
+                                <div class="text-center ms-2 flex-shrink-0 text-white"
+                                     style="background:rgba(255,255,255,.2);backdrop-filter:blur(4px);border-radius:12px;padding:.4rem .7rem;min-width:48px;">
+                                    <div style="font-size:1.4rem;font-weight:800;line-height:1;"><?= $tgl_short ?></div>
+                                    <div style="font-size:.65rem;opacity:.9;text-transform:uppercase;"><?= $bln_short ?></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body px-4 py-3">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <i class="bi bi-geo-alt-fill" style="color:var(--c-danger);font-size:.85rem;"></i>
+                                <span class="fw-600" style="font-size:.87rem;color:var(--txt);font-weight:600;">
+                                    <?= htmlspecialchars($d['nama_venue']) ?>
                                 </span>
-                                <h5 class="mb-0 fw-bold lh-sm text-white" style="font-size:1rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
-                                    <?= htmlspecialchars($d['nama_event']) ?>
-                                </h5>
                             </div>
-                            <div class="text-center ms-2 flex-shrink-0 text-white"
-                                 style="background:rgba(255,255,255,.2);backdrop-filter:blur(4px);border-radius:12px;padding:.4rem .7rem;min-width:48px;">
-                                <div style="font-size:1.4rem;font-weight:800;line-height:1;"><?= $tgl_short ?></div>
-                                <div style="font-size:.65rem;opacity:.9;text-transform:uppercase;"><?= $bln_short ?></div>
-                            </div>
+                            <p class="text-muted mb-0" style="font-size:.8rem;padding-left:1.3rem;">
+                                <?= htmlspecialchars($d['alamat']) ?>
+                            </p>
                         </div>
-                    </div>
-                    <!-- Body -->
-                    <div class="card-body px-4 py-3">
-                        <div class="d-flex align-items-center gap-2 mb-1">
-                            <i class="bi bi-geo-alt-fill" style="color:var(--c-danger);font-size:.85rem;"></i>
-                            <span class="fw-600" style="font-size:.87rem;color:var(--txt);font-weight:600;">
-                                <?= htmlspecialchars($d['nama_venue']) ?>
-                            </span>
-                        </div>
-                        <p class="text-muted mb-0" style="font-size:.8rem;padding-left:1.3rem;">
-                            <?= htmlspecialchars($d['alamat']) ?>
-                        </p>
-                    </div>
+                    <?php endif; ?>
                     <!-- Footer -->
                     <div class="card-footer bg-white border-0 px-4 pb-4 pt-0">
-                        <a href="?p=event_detail&id=<?= $d['id_event'] ?>" class="btn btn-primary w-100"
-                           style="border-radius:50px;">
-                            <i class="bi bi-ticket-perforated me-2"></i>Lihat &amp; Pesan Tiket
-                        </a>
+                        <?php if($is_passed): ?>
+                            <a href="?p=event_detail&id=<?= $d['id_event'] ?>" class="btn btn-secondary w-100"
+                               style="border-radius:50px;">
+                                <i class="bi bi-calendar-x me-2"></i>Lihat Detail
+                            </a>
+                        <?php else: ?>
+                            <a href="?p=event_detail&id=<?= $d['id_event'] ?>" class="btn btn-primary w-100"
+                               style="border-radius:50px;">
+                                <i class="bi bi-ticket-perforated me-2"></i>Lihat &amp; Pesan Tiket
+                            </a>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

@@ -1,7 +1,13 @@
 <?php
 if (isset($_GET['hapus'])) {
     mysqli_query($conn, "DELETE FROM tiket WHERE id_tiket = " . (int)$_GET['hapus']);
-    echo "<script>alert('Tiket berhasil dihapus!'); window.location='?p=admin_tiket';</script>";
+    $_SESSION['alert'] = [
+        'type' => 'success',
+        'title' => 'Dihapus',
+        'text' => 'Tiket berhasil dihapus!'
+    ];
+    header("Location: ?p=admin_tiket");
+    exit;
 }
 $search      = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
 $where       = $search ? "WHERE t.nama_tiket LIKE '%$search%' OR e.nama_event LIKE '%$search%'" : '';
@@ -45,7 +51,7 @@ $query       = mysqli_query($conn, "SELECT t.*, e.nama_event FROM tiket t JOIN e
                                 <td class="text-center"><span class="badge bg-info"><?= $row['kuota'] ?> tiket</span></td>
                                 <td class="text-center">
                                     <a href="?p=admin_tiket_edit&id=<?= $row['id_tiket'] ?>" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i></a>
-                                    <a href="?p=admin_tiket&hapus=<?= $row['id_tiket'] ?>&page=<?= $cur_page ?>&search=<?= urlencode($search) ?>" class="btn btn-danger btn-sm" onclick="return confirm('Yakin hapus?')"><i class="bi bi-trash"></i></a>
+                                    <a href="?p=admin_tiket&hapus=<?= $row['id_tiket'] ?>&page=<?= $cur_page ?>&search=<?= urlencode($search) ?>" class="btn btn-danger btn-sm btn-hapus"><i class="bi bi-trash"></i></a>
                                 </td>
                             </tr>
                             <?php endwhile; ?>

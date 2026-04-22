@@ -2,37 +2,88 @@
 if (!isset($_GET['id'])) { header("Location: ?p=admin_venue"); exit; }
 $id_venue = (int)$_GET['id'];
 $data = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM venue WHERE id_venue = $id_venue"));
-if (!$data) { echo "<script>alert('Data tidak ditemukan!'); window.location='?p=admin_venue';</script>"; exit; }
+
+if (!$data) { 
+    $_SESSION['alert'] = ['type' => 'error', 'title' => 'Error', 'text' => 'Data venue tidak ditemukan!'];
+    header("Location: ?p=admin_venue"); exit; 
+}
 
 if (isset($_POST['update'])) {
     $nama_venue = mysqli_real_escape_string($conn, $_POST['nama_venue']);
     $alamat     = mysqli_real_escape_string($conn, $_POST['alamat']);
     $kapasitas  = (int)$_POST['kapasitas'];
-    $update = mysqli_query($conn, "UPDATE venue SET nama_venue='$nama_venue', alamat='$alamat', kapasitas='$kapasitas' WHERE id_venue=$id_venue");
+
+    $update = mysqli_query($conn, "UPDATE venue SET nama_venue='$nama_venue', alamat='$alamat', kapasitas=$kapasitas WHERE id_venue=$id_venue");
     if ($update) {
-        echo "<script>alert('Venue berhasil diupdate!'); window.location='?p=admin_venue';</script>";
+        $_SESSION['alert'] = ['type' => 'success', 'title' => 'Berhasil!', 'text' => 'Data venue telah diperbarui.'];
+        header("Location: ?p=admin_venue");
+        exit;
     } else {
-        echo "<script>alert('Gagal: " . mysqli_error($conn) . "');</script>";
+        $_SESSION['alert'] = ['type' => 'error', 'title' => 'Gagal Update', 'text' => mysqli_error($conn)];
     }
 }
 ?>
-<div class="container-fluid"><div class="row">
-    <?php include 'pages/admin/_sidebar.php'; ?>
-    <main class="col-md-10 ms-sm-auto px-md-4 py-4">
-        <h2><i class="bi bi-pencil-square"></i> Edit Venue</h2>
-        <nav aria-label="breadcrumb"><ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="?p=dashboard_admin">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="?p=admin_venue">Venue</a></li>
-            <li class="breadcrumb-item active">Edit</li>
-        </ol></nav>
-        <div class="card"><div class="card-body">
-            <form method="POST">
-                <div class="mb-3"><label class="form-label">Nama Venue <span class="text-danger">*</span></label><input type="text" name="nama_venue" class="form-control" value="<?= htmlspecialchars($data['nama_venue']) ?>" required></div>
-                <div class="mb-3"><label class="form-label">Alamat <span class="text-danger">*</span></label><textarea name="alamat" class="form-control" rows="3" required><?= htmlspecialchars($data['alamat']) ?></textarea></div>
-                <div class="mb-3"><label class="form-label">Kapasitas <span class="text-danger">*</span></label><input type="number" name="kapasitas" class="form-control" value="<?= $data['kapasitas'] ?>" min="1" required></div>
-                <button type="submit" name="update" class="btn btn-warning"><i class="bi bi-save"></i> Update</button>
-                <a href="?p=admin_venue" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Kembali</a>
-            </form>
-        </div></div>
-    </main>
-</div></div>
+
+<div class="container-fluid">
+    <div class="row">
+        <?php include 'pages/admin/_sidebar.php'; ?>
+        <main class="col-md-10 ms-sm-auto px-md-4 py-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="page-title"><i class="bi bi-pencil-square"></i> Edit Venue</h2>
+                    <p class="text-muted mb-0">Perbarui informasi lokasi penyelenggaraan</p>
+                </div>
+                <a href="?p=admin_venue" class="btn btn-outline-secondary rounded-pill px-4 shadow-sm"><i class="bi bi-arrow-left me-1"></i> Kembali</a>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-7">
+                    <div class="card border-0 shadow-sm" style="border-radius: 24px;">
+                        <div class="card-body p-4 p-md-5">
+                            <form method="POST">
+                                <div class="mb-4 text-center">
+                                    <div class="d-inline-flex p-3 rounded-circle bg-warning bg-opacity-10 mb-3">
+                                        <i class="bi bi-geo-alt fs-1 text-warning"></i>
+                                    </div>
+                                    <h5 class="fw-bold">Perbarui Lokasi</h5>
+                                    <p class="text-muted small">ID Venue: #<?= $id_venue ?></p>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold small text-uppercase opacity-75">Nama Venue</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-0"><i class="bi bi-building"></i></span>
+                                        <input type="text" name="nama_venue" class="form-control form-control-lg border-0 bg-light" value="<?= htmlspecialchars($data['nama_venue']) ?>" required style="border-radius: 0 12px 12px 0;">
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold small text-uppercase opacity-75">Alamat Lengkap</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-0"><i class="bi bi-map"></i></span>
+                                        <textarea name="alamat" class="form-control form-control-lg border-0 bg-light" rows="3" required style="border-radius: 0 12px 12px 0;"><?= htmlspecialchars($data['alamat']) ?></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="mb-5">
+                                    <label class="form-label fw-bold small text-uppercase opacity-75">Kapasitas Maksimal</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-0"><i class="bi bi-people"></i></span>
+                                        <input type="number" name="kapasitas" class="form-control form-control-lg border-0 bg-light" value="<?= $data['kapasitas'] ?>" required style="border-radius: 0 12px 12px 0;">
+                                        <span class="input-group-text bg-light border-0">Orang</span>
+                                    </div>
+                                </div>
+
+                                <div class="d-grid pt-2">
+                                    <button type="submit" name="update" class="btn btn-warning btn-lg fw-bold shadow-sm text-dark" style="border-radius: 50px; padding: 16px;">
+                                        <i class="bi bi-save-fill me-2"></i> Simpan Perubahan
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>

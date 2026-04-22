@@ -7,23 +7,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['new_status'])) {
     $new_status = $_POST['new_status'];
     $allowed_status = ['paid', 'cancel', 'pending'];
     if (in_array($new_status, $allowed_status)) {
-        // Generate tiket jika dikonfirmasi paid
-        if ($new_status === 'paid') {
-            $det = mysqli_query($conn, "SELECT id_detail, qty FROM order_detail WHERE id_order = $id_order");
-            while ($d = mysqli_fetch_assoc($det)) {
-                $exists = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as c FROM attendee WHERE id_detail = {$d['id_detail']}"));
-                if ($exists['c'] == 0) {
-                    for ($i = 0; $i < $d['qty']; $i++) {
-                        $kode = 'TKT-' . strtoupper(substr(md5(uniqid()), 0, 8));
-                        mysqli_query($conn, "INSERT INTO attendee (id_detail, kode_tiket) VALUES ({$d['id_detail']}, '$kode')");
+        // Cek status saat ini
+        $curr = mysqli_fetch_assoc(mysqli_query($conn, "SELECT status FROM orders WHERE id_order = $id_order"));
+        if ($curr['status'] === 'paid') {
+            $_SESSION['flash_error'] = 'Order yang sudah PAID tidak dapat diubah lagi!';
+        } elseif ($curr['status'] === 'cancel' && $new_status === 'pending') {
+            $_SESSION['flash_error'] = 'Order yang sudah CANCEL tidak dapat dikembalikan ke Pending!';
+        } else {
+            // Generate tiket jika dikonfirmasi paid
+            if ($new_status === 'paid') {
+                $det = mysqli_query($conn, "SELECT id_detail, qty FROM order_detail WHERE id_order = $id_order");
+                while ($d = mysqli_fetch_assoc($det)) {
+                    $exists = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as c FROM attendee WHERE id_detail = {$d['id_detail']}"));
+                    if ($exists['c'] == 0) {
+                        for ($i = 0; $i < $d['qty']; $i++) {
+                            $kode = 'TKT-' . strtoupper(substr(md5(uniqid()), 0, 8));
+                            mysqli_query($conn, "INSERT INTO attendee (id_detail, kode_tiket) VALUES ({$d['id_detail']}, '$kode')");
+                        }
                     }
                 }
             }
+            mysqli_query($conn, "UPDATE orders SET status = '$new_status' WHERE id_order = $id_order");
+            $msg = $new_status === 'paid' ? 'Order berhasil dikonfirmasi & tiket diterbitkan!' :
+                   ($new_status === 'cancel' ? 'Order berhasil dibatalkan.' : 'Order dikembalikan ke pending.');
+            $_SESSION['flash_success'] = $msg;
         }
-        mysqli_query($conn, "UPDATE orders SET status = '$new_status' WHERE id_order = $id_order");
-        $msg = $new_status === 'paid' ? 'Order berhasil dikonfirmasi & tiket diterbitkan!' :
-               ($new_status === 'cancel' ? 'Order berhasil dibatalkan.' : 'Order dikembalikan ke pending.');
-        $_SESSION['flash_success'] = $msg;
     }
     echo "<script>window.location='?p=admin_order_detail&id=$id_order';</script>";
     exit;
@@ -45,6 +53,14 @@ $status_badge = $order['status']=='paid' ? 'success' : ($order['status']=='pendi
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
         <?php unset($_SESSION['flash_success']); endif; ?>
+
+        <?php if (isset($_SESSION['flash_error'])): ?>
+        <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center gap-2 mb-3" role="alert">
+            <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+            <div><?= $_SESSION['flash_error'] ?></div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <?php unset($_SESSION['flash_error']); endif; ?>
         <nav aria-label="breadcrumb" class="mb-4"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="?p=dashboard_admin">Dashboard</a></li><li class="breadcrumb-item"><a href="?p=admin_order_list">Orders</a></li><li class="breadcrumb-item active">Order #<?= $id_order ?></li></ol></nav>
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div><h2 class="page-title"><i class="bi bi-receipt"></i> Detail Order #<?= $id_order ?></h2><p class="text-muted mb-0">Informasi lengkap transaksi</p></div>
@@ -115,19 +131,13 @@ $status_badge = $order['status']=='paid' ? 'success' : ($order['status']=='pendi
                         </div>
                     </div>
                     <?php elseif ($order['status'] === 'paid'): ?>
-                    <form method="POST" action="?p=admin_order_detail&id=<?= $id_order ?>" onsubmit="return confirm('Refund/batalkan order yang sudah PAID?')">
-                        <input type="hidden" name="new_status" value="cancel">
-                        <button type="submit" class="btn btn-outline-danger w-100 mb-2">
-                            <i class="bi bi-arrow-counterclockwise me-2"></i>Refund / Batalkan
-                        </button>
-                    </form>
+                        <div class="alert alert-success border-0 small mb-0" style="background:rgba(25,135,84,0.1); color:#157347;">
+                            <i class="bi bi-shield-check me-1"></i> Order ini sudah selesai (PAID) dan tidak dapat dibatalkan melalui sistem ini.
+                        </div>
                     <?php elseif ($order['status'] === 'cancel'): ?>
-                    <form method="POST" action="?p=admin_order_detail&id=<?= $id_order ?>" onsubmit="return confirm('Kembalikan order ke status Pending?')">
-                        <input type="hidden" name="new_status" value="pending">
-                        <button type="submit" class="btn btn-outline-warning w-100 mb-2">
-                            <i class="bi bi-arrow-clockwise me-2"></i>Kembalikan ke Pending
-                        </button>
-                    </form>
+                        <div class="alert alert-danger border-0 small mb-0" style="background:rgba(220,53,69,0.1); color:#b02a37;">
+                            <i class="bi bi-x-circle me-1"></i> Order ini telah dibatalkan (CANCEL) dan tidak dapat diaktifkan kembali.
+                        </div>
                     <?php endif; ?>
                     <a href="?p=admin_order_list" class="btn btn-outline-secondary w-100 mt-1">
                         <i class="bi bi-arrow-left me-2"></i>Kembali ke Orders
