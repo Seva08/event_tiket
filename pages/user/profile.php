@@ -146,11 +146,7 @@ $total_pending = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as c FR
                         </div>
                     </div>
                 </div>
-            </div>
-            
-            <div class="mt-4 text-center">
-                <p class="text-muted small">Bergabung sejak <?= date('d F Y', strtotime($user['created_at'] ?? '2023-01-01')) ?></p>
-            </div>
+            </div>        
         </div>
     </div>
 </div>

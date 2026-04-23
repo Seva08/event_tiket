@@ -353,6 +353,9 @@ if (in_array($page_param, $petugas_pages) && (!isset($_SESSION['role']) || !in_a
         .nav-tabs .nav-link:hover { color: var(--c-primary); border-bottom-color: #a5b4fc; }
         .nav-tabs .nav-link.active { color: var(--c-primary); border-bottom-color: var(--c-primary); background: none; }
 
+        .img-hd-container:hover img { transform: scale(1.08); }
+        .img-hd-container img { image-rendering: auto; }
+
         @media (max-width: 768px) {
             .sidebar { min-height: auto; }
             .stat-card { margin-bottom: 1rem; }

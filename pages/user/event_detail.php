@@ -38,7 +38,10 @@ $min_price = mysqli_fetch_assoc($q_min)['min_harga'] ?? 0;
         content: '';
         position: absolute;
         bottom: 0; left: 0; right: 0; top: 0;
-        background: linear-gradient(to top, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.2) 60%, rgba(15, 23, 42, 0) 100%);
+        background: linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.4) 50%, rgba(15, 23, 42, 0) 100%);
+    }
+    .event-banner:hover {
+        box-shadow: 0 30px 60px rgba(0,0,0,0.3);
     }
     .banner-content {
         position: absolute;
@@ -77,8 +80,8 @@ $min_price = mysqli_fetch_assoc($q_min)['min_harga'] ?? 0;
 
 <div class="container pb-5">
     <!-- Banner Section -->
-    <div class="event-banner" style="background-image: url('<?= $event['gambar'] ? "uploads/".$event['gambar'] : "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=1200&q=80" ?>');">
-        <div class="banner-content">
+    <div class="event-banner img-hd-container" style="background-image: url('<?= $event['gambar'] ? "uploads/".$event['gambar'] : "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=1200&q=80" ?>'); transition: all 0.5s ease; filter: contrast(1.02) brightness(1.05);">
+        <div class="banner-content" style="border-radius: 20px; padding: 20px;">
             <div class="d-flex align-items-center gap-2 mb-3">
                 <span class="badge bg-warning text-dark px-3 py-2" style="border-radius: 50px;">
                     <i class="bi bi-star-fill me-1"></i> Rekomendasi
