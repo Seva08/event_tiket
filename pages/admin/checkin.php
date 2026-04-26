@@ -66,7 +66,7 @@ unset($_SESSION['last_checkin_admin']);
     <main class="col-md-10 ms-sm-auto px-md-4 py-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h2 class="page-title"><i class="bi bi-qr-code-scan"></i> Check-in Tiket</h2>
+                <h2 class="fw-bold"><i class="bi bi-qr-code-scan"></i> Check-in Tiket</h2>
                 <p class="text-muted mb-0">Scan atau masukkan kode tiket pengunjung untuk validasi</p>
             </div>
             <span class="badge bg-primary fs-6 px-3 py-2"><i class="bi bi-calendar3"></i> <?= date('d M Y') ?></span>

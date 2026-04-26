@@ -319,53 +319,57 @@ $orders = mysqli_query($conn, "
 
 <script>
 function updateStatus(id_order, new_status, btn) {
-    const labels = { paid: 'KONFIRMASI PAID', cancel: 'CANCEL order', pending: 'kembalikan ke PENDING' };
-    const icons  = { paid: '✅', cancel: '❌', pending: '🔄' };
+    const labels = { paid: 'KONFIRMASI PAID', cancel: 'BATALKAN (CANCEL)', pending: 'KEMBALIKAN KE PENDING' };
+    const text = { 
+        paid: 'Aksi ini akan merubah status menjadi PAID dan generate tiket attendee.', 
+        cancel: 'Order yang dibatalkan tidak dapat dikembalikan ke status Pending.',
+        pending: 'Yakin ingin mengembalikan status order ini?'
+    };
+    const icon = { paid: 'success', cancel: 'warning', pending: 'info' };
 
-    if (!confirm(`${icons[new_status]} Yakin ingin ${labels[new_status]} #${id_order}?`)) return;
+    Swal.fire({
+        title: labels[new_status],
+        text: text[new_status],
+        icon: icon[new_status],
+        showCancelButton: true,
+        confirmButtonColor: new_status === 'cancel' ? '#ef4444' : '#6366f1',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Ya, Lanjutkan!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
 
-    const originalHTML = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+            const formData = new FormData();
+            formData.append('action', 'update_status');
+            formData.append('id_order', id_order);
+            formData.append('new_status', new_status);
 
-    const formData = new FormData();
-    formData.append('action', 'update_status');
-    formData.append('id_order', id_order);
-    formData.append('new_status', new_status);
-
-    fetch('?p=admin_order_list', { method: 'POST', body: formData })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                showToast(data.message, 'success');
-                // Refresh baris setelah 800ms biar animasi selesai
-                setTimeout(() => location.reload(), 800);
-            } else {
-                showToast(data.message, 'danger');
-                btn.disabled = false;
-                btn.innerHTML = originalHTML;
-            }
-        })
-        .catch(() => {
-            showToast('Terjadi kesalahan jaringan', 'danger');
-            btn.disabled = false;
-            btn.innerHTML = originalHTML;
-        });
-}
-
-function showToast(message, type = 'success') {
-    const id = 'toast-' + Date.now();
-    const html = `
-    <div id="${id}" class="toast align-items-center text-bg-${type} border-0" role="alert">
-        <div class="d-flex">
-            <div class="toast-body fw-semibold">${message}</div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-        </div>
-    </div>`;
-    document.getElementById('toastContainer').insertAdjacentHTML('beforeend', html);
-    const el = document.getElementById(id);
-    const toast = new bootstrap.Toast(el, { delay: 3000 });
-    toast.show();
-    el.addEventListener('hidden.bs.toast', () => el.remove());
+            fetch('?p=admin_order_list', { method: 'POST', body: formData })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: data.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => location.reload());
+                    } else {
+                        Swal.fire('Gagal!', data.message, 'error');
+                        btn.disabled = false;
+                        btn.innerHTML = originalHTML;
+                    }
+                })
+                .catch(() => {
+                    Swal.fire('Error!', 'Terjadi kesalahan jaringan', 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = originalHTML;
+                });
+        }
+    });
 }
 </script>

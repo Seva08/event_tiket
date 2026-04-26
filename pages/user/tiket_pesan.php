@@ -177,17 +177,17 @@ if (isset($_POST['pesan'])) {
 
 <div class="container py-4">
     <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="?p=home">Home</a></li>
-            <li class="breadcrumb-item"><a href="?p=event_detail&id=<?= $tiket['id_event'] ?>"><?= htmlspecialchars($tiket['nama_event']) ?></a></li>
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="?p=home" class="text-decoration-none">Home</a></li>
+            <li class="breadcrumb-item"><a href="?p=event_detail&id=<?= $tiket['id_event'] ?>" class="text-decoration-none"><?= htmlspecialchars($tiket['nama_event']) ?></a></li>
             <li class="breadcrumb-item active">Pesan Tiket</li>
         </ol>
     </nav>
 
     <div class="row justify-content-center">
-        <div class="col-lg-8">
+        <div class="col-xl-10">
             <div class="d-flex align-items-center mb-4">
-                <div class="bg-primary rounded-3 d-flex align-items-center justify-content-center me-3 text-white p-3">
+                <div class="bg-primary rounded-3 d-flex align-items-center justify-content-center me-3 text-white shadow-sm" style="width: 56px; height: 56px;">
                     <i class="bi bi-cart-plus fs-4"></i>
                 </div>
                 <div>
@@ -199,20 +199,22 @@ if (isset($_POST['pesan'])) {
 
             <div class="row g-4">
                 <!-- Info Event & Tiket -->
-                <div class="col-md-5">
-                    <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="col-lg-5">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
                         <?php if($tiket['gambar']): ?>
-                            <div class="position-relative ratio ratio-16x9 overflow-hidden">
-                                <img src="uploads/<?= $tiket['gambar'] ?>" alt="<?= htmlspecialchars($tiket['nama_event']) ?>" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover">
-                                <div class="position-absolute bottom-0 start-0 end-0 bg-dark bg-opacity-75 p-3">
+                            <div class="position-relative">
+                                <div class="ratio ratio-16x9">
+                                    <img src="uploads/<?= $tiket['gambar'] ?>" alt="<?= htmlspecialchars($tiket['nama_event']) ?>" class="w-100 h-100 object-fit-cover">
+                                </div>
+                                <div class="position-absolute bottom-0 start-0 end-0 p-3" style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);">
                                     <h5 class="fw-bold mb-1 lh-sm text-white"><?= htmlspecialchars($tiket['nama_event']) ?></h5>
                                     <div class="text-white-50 small">
-                                        <i class="bi bi-calendar3 me-1"></i><?= date('d M Y', strtotime($tiket['tanggal'])) ?>
+                                        <i class="bi bi-calendar3 me-1 text-warning"></i><?= date('d M Y', strtotime($tiket['tanggal'])) ?>
                                     </div>
                                 </div>
                             </div>
                         <?php else: ?>
-                            <div class="bg-primary text-white p-4 position-relative">
+                            <div class="bg-primary text-white p-4">
                                 <h5 class="fw-bold mb-1 lh-sm"><?= htmlspecialchars($tiket['nama_event']) ?></h5>
                                 <div class="small opacity-75">
                                     <i class="bi bi-calendar3 me-1"></i><?= date('d M Y', strtotime($tiket['tanggal'])) ?>
@@ -223,81 +225,92 @@ if (isset($_POST['pesan'])) {
                         <?php if ($is_limit_reached): ?>
                             <div class="p-3 bg-warning bg-opacity-10 border-start border-warning border-4">
                                 <div class="d-flex align-items-center text-warning">
-                                    <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
                                     <span class="fw-bold small">BATAS PEMBELIAN TERCAPAI</span>
                                 </div>
-                                <p class="mb-0 mt-1 text-muted small">Anda sudah membeli maksimal <?= $max_beli_user ?> tiket untuk event ini (kumulatif semua kategori).</p>
+                                <p class="mb-0 mt-1 text-muted small lh-sm">Anda sudah membeli maksimal <?= $max_beli_user ?> tiket untuk event ini.</p>
                             </div>
                         <?php endif; ?>
 
-                        <div class="card-body p-4 bg-light">
-                            <div class="mb-3">
-                                <small class="text-muted text-uppercase fw-bold small">Venue</small>
-                                <div class="fw-semibold text-dark"><i class="bi bi-geo-alt-fill text-danger me-1"></i><?= htmlspecialchars($tiket['nama_venue']) ?></div>
-                                <div class="text-muted small"><?= htmlspecialchars($tiket['alamat']) ?></div>
+                        <div class="card-body p-4">
+                            <div class="mb-4">
+                                <small class="text-muted text-uppercase fw-bold d-block mb-2" style="font-size: 0.7rem;">Lokasi Pelaksanaan</small>
+                                <div class="fw-bold text-dark mb-1"><i class="bi bi-geo-alt-fill text-danger me-1"></i><?= htmlspecialchars($tiket['nama_venue']) ?></div>
+                                <div class="text-muted small lh-base"><?= htmlspecialchars($tiket['alamat']) ?></div>
                             </div>
-                            <hr class="my-3 opacity-10">
-                            <div class="mb-3">
-                                <small class="text-muted text-uppercase fw-bold small">Tipe Tiket</small>
-                                <div class="fw-bold text-primary fs-5"><?= htmlspecialchars($tiket['nama_tiket']) ?></div>
-                            </div>
-                            <div>
-                                <small class="text-muted text-uppercase fw-bold small">Harga per Tiket</small>
-                                <div class="fw-bold text-dark fs-4" id="display-harga" data-harga="<?= $tiket['harga'] ?>">Rp <?= number_format($tiket['harga'], 0, ',', '.') ?></div>
+                            
+                            <div class="p-3 bg-light rounded-4 border">
+                                <div class="mb-3 pb-3 border-bottom border-secondary border-opacity-10">
+                                    <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.7rem;">Kategori Tiket</small>
+                                    <div class="fw-bold text-primary fs-5"><?= htmlspecialchars($tiket['nama_tiket']) ?></div>
+                                </div>
+                                <div>
+                                    <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.7rem;">Harga Satuan</small>
+                                    <div class="fw-bold text-dark fs-4" id="display-harga" data-harga="<?= $tiket['harga'] ?>">Rp <?= number_format($tiket['harga'], 0, ',', '.') ?></div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Form Pemesanan -->
-                <div class="col-md-7">
-                    <div class="card h-100 border-0 shadow-sm rounded-4">
-                        <div class="card-body p-4">
+                <div class="col-lg-7">
+                    <div class="card border-0 shadow-sm rounded-4 h-100">
+                        <div class="card-body p-4 p-md-5">
                             <form method="POST" action="">
                                 <div class="mb-4">
                                     <label for="qty" class="form-label fw-bold">Jumlah Tiket <span class="text-danger">*</span></label>
-                                    <div class="input-group w-25 min-vw-15">
-                                        <button class="btn btn-outline-secondary" type="button" id="btn-min" <?= $is_limit_reached ? 'disabled' : '' ?>><i class="bi bi-dash"></i></button>
-                                        <input type="number" class="form-control text-center fw-bold" id="qty" name="qty" value="<?= $is_limit_reached ? 0 : 1 ?>" min="<?= $is_limit_reached ? 0 : 1 ?>" max="<?= $max_input ?>" <?= $is_limit_reached ? 'disabled' : '' ?>>
-                                        <button class="btn btn-outline-secondary" type="button" id="btn-plus" <?= $is_limit_reached ? 'disabled' : '' ?>><i class="bi bi-plus"></i></button>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="input-group" style="max-width: 160px;">
+                                            <button class="btn btn-outline-secondary border-2" type="button" id="btn-min" <?= $is_limit_reached ? 'disabled' : '' ?>><i class="bi bi-dash-lg"></i></button>
+                                            <input type="number" class="form-control text-center fw-bold border-2" id="qty" name="qty" value="<?= $is_limit_reached ? 0 : 1 ?>" min="<?= $is_limit_reached ? 0 : 1 ?>" max="<?= $max_input ?>" <?= $is_limit_reached ? 'disabled' : '' ?> readonly>
+                                            <button class="btn btn-outline-secondary border-2" type="button" id="btn-plus" <?= $is_limit_reached ? 'disabled' : '' ?>><i class="bi bi-plus-lg"></i></button>
+                                        </div>
+                                        <div class="small text-muted">
+                                            <span class="badge bg-light text-dark border px-2 py-1">Maks: <?= $max_input ?> Tiket</span>
+                                        </div>
                                     </div>
-                                    <div class="form-text mt-2">
-                                        <i class="bi bi-info-circle me-1"></i>
-                                        Maksimal pesanan Anda: <?= $max_input ?> tiket 
-                                        <?php if($total_beli > 0): ?>
-                                            (Sudah beli: <?= $total_beli ?>)
-                                        <?php endif; ?>
+                                    <?php if($total_beli > 0): ?>
+                                    <div class="form-text mt-2 text-info small">
+                                        <i class="bi bi-info-circle-fill me-1"></i> Anda sudah memesan <?= $total_beli ?> tiket sebelumnya.
                                     </div>
+                                    <?php endif; ?>
                                 </div>
 
-                                <div class="mb-4">
-                                    <label for="kode_voucher" class="form-label fw-bold">Punya Kode Voucher?</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-ticket-detailed"></i></span>
-                                        <input type="text" class="form-control border-start-0 border-end-0 ps-0" id="kode_voucher" name="kode_voucher" placeholder="Masukkan kode voucher" <?= $is_limit_reached ? 'disabled' : '' ?>>
-                                        <button class="btn btn-outline-primary fw-bold" type="button" id="btn-cek-voucher" <?= $is_limit_reached ? 'disabled' : '' ?>>Cek Voucher</button>
+                                <div class="mb-4 pt-2">
+                                    <label for="kode_voucher" class="form-label fw-bold">Kode Voucher (Opsional)</label>
+                                    <div class="input-group shadow-sm rounded-3 overflow-hidden">
+                                        <span class="input-group-text bg-white border-end-0 text-primary"><i class="bi bi-tags-fill"></i></span>
+                                        <input type="text" class="form-control border-start-0 ps-0 py-2" id="kode_voucher" name="kode_voucher" placeholder="Contoh: DISKON10" <?= $is_limit_reached ? 'disabled' : '' ?>>
+                                        <button class="btn btn-primary fw-bold px-4" type="button" id="btn-cek-voucher" <?= $is_limit_reached ? 'disabled' : '' ?>>Gunakan</button>
                                     </div>
-                                    <div id="voucher-status" class="form-text mt-2">Gunakan voucher untuk mendapatkan diskon!</div>
+                                    <div id="voucher-status" class="form-text mt-2 small lh-sm text-muted">Masukkan kode voucher untuk mendapatkan potongan harga spesial.</div>
                                 </div>
 
-                                <div class="p-3 mb-4 rounded-3 bg-body-tertiary border">
+                                <div class="p-4 mb-4 rounded-4 bg-light border border-dashed shadow-sm">
+                                    <h6 class="fw-bold mb-3">Ringkasan Pembayaran</h6>
                                     <div class="d-flex justify-content-between mb-2">
-                                        <span class="text-muted">Subtotal (<span id="summary-qty">1</span> tiket)</span>
-                                        <span class="fw-semibold text-dark" id="summary-subtotal">Rp <?= number_format($tiket['harga'], 0, ',', '.') ?></span>
+                                        <span class="text-muted small">Subtotal (<span id="summary-qty">1</span>x)</span>
+                                        <span class="fw-bold text-dark" id="summary-subtotal">Rp <?= number_format($tiket['harga'], 0, ',', '.') ?></span>
                                     </div>
                                     <div class="d-flex justify-content-between mb-2 d-none" id="row-potongan">
-                                        <span class="text-success">Diskon Voucher</span>
+                                        <span class="text-success small fw-bold">Diskon Voucher</span>
                                         <span class="fw-bold text-success" id="summary-potongan">- Rp 0</span>
                                     </div>
-                                    <div class="d-flex justify-content-between pt-2 mt-2 border-top">
-                                        <span class="fw-bold fs-5">Total Bayar</span>
-                                        <span class="fw-bold fs-5 text-primary" id="summary-total">Rp <?= number_format($tiket['harga'], 0, ',', '.') ?></span>
+                                    <hr class="my-3 opacity-10">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="fw-bold text-dark">Total Pembayaran</span>
+                                        <span class="fw-bold fs-4 text-primary" id="summary-total">Rp <?= number_format($tiket['harga'], 0, ',', '.') ?></span>
                                     </div>
                                 </div>
 
-                                <button type="submit" name="pesan" class="btn <?= $is_limit_reached ? 'btn-secondary' : 'btn-primary' ?> w-100 py-3 fw-bold rounded-pill fs-5" <?= $is_limit_reached ? 'disabled' : '' ?>>
-                                    <i class="bi bi-check2-circle me-2"></i><?= $is_limit_reached ? 'Batas Pembelian Tercapai' : 'Konfirmasi Pesanan' ?>
+                                <button type="submit" name="pesan" class="btn <?= $is_limit_reached ? 'btn-secondary' : 'btn-primary' ?> w-100 py-3 fw-bold rounded-pill shadow-sm transition-all" <?= $is_limit_reached ? 'disabled' : '' ?>>
+                                    <i class="bi bi-shield-lock-fill me-2"></i><?= $is_limit_reached ? 'Batas Pembelian Tercapai' : 'Buat Pesanan Sekarang' ?>
                                 </button>
+                                
+                                <p class="text-center text-muted small mt-3 mb-0">
+                                    <i class="bi bi-info-circle me-1"></i> Dengan memesan, Anda menyetujui Syarat & Ketentuan kami.
+                                </p>
                             </form>
                         </div>
                     </div>

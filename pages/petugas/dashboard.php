@@ -27,7 +27,7 @@ $total_checkin = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as tota
 <div class="container-fluid">
     <div class="row">
         <!-- Sidebar Petugas -->
-        <nav class="col-md-2 d-none d-md-block py-2" id="adminSidebar">
+        <nav class="col-md-2 d-none d-md-block bg-dark py-2" id="adminSidebar">
             <div class="px-3 py-3 mb-1">
                 <div class="d-flex align-items-center gap-2">
                     <span class="bg-success text-white rounded-2 d-inline-flex align-items-center justify-content-center p-2">

@@ -63,7 +63,7 @@ $status_badge = $order['status']=='paid' ? 'success' : ($order['status']=='pendi
         <?php unset($_SESSION['flash_error']); endif; ?>
         <nav aria-label="breadcrumb" class="mb-4"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="?p=dashboard_admin">Dashboard</a></li><li class="breadcrumb-item"><a href="?p=admin_order_list">Orders</a></li><li class="breadcrumb-item active">Order #<?= $id_order ?></li></ol></nav>
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <div><h2 class="page-title"><i class="bi bi-receipt"></i> Detail Order #<?= $id_order ?></h2><p class="text-muted mb-0">Informasi lengkap transaksi</p></div>
+            <div><h2 class="fw-bold"><i class="bi bi-receipt"></i> Detail Order #<?= $id_order ?></h2><p class="text-muted mb-0">Informasi lengkap transaksi</p></div>
             <span class="badge bg-<?= $status_badge ?> fs-5 px-4 py-2"><?= ucfirst($order['status']) ?></span>
         </div>
         <div class="row">

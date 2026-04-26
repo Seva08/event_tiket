@@ -28,7 +28,7 @@ $query       = mysqli_query($conn, "SELECT * FROM venue $where ORDER BY nama_ven
         <main class="col-md-10 ms-sm-auto px-md-4 py-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <h2 class="page-title"><i class="bi bi-geo-alt"></i> Data Venue</h2>
+                    <h2 class="fw-bold"><i class="bi bi-geo-alt"></i> Data Venue</h2>
                     <p class="text-muted mb-0">Kelola venue penyelenggaraan event</p>
                 </div>
                 <a href="?p=admin_venue_tambah" class="btn btn-success btn-lg"><i class="bi bi-plus-circle"></i> Tambah Venue</a>
@@ -49,7 +49,7 @@ $query       = mysqli_query($conn, "SELECT * FROM venue $where ORDER BY nama_ven
                 </div>
             </div>
 
-            <div class="table-container">
+            <div class="card shadow-sm p-3">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="mb-0"><i class="bi bi-list"></i> Daftar Venue</h5>
                     <span class="badge bg-primary fs-6">Total: <?= $total_data ?> venue</span>
