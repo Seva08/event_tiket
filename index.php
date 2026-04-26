@@ -58,6 +58,7 @@ if ($page === 'login' && isset($_POST['login'])) {
             $_SESSION['id_user'] = $data['id_user'];
             $_SESSION['role']    = $data['role'];
             $_SESSION['nama']    = $data['nama'];
+            $_SESSION['email']   = $data['email'];
             if ($data['role'] == 'admin') {
                 header("Location: index.php?p=dashboard_admin");
             } elseif ($data['role'] == 'petugas') {

@@ -65,6 +65,22 @@ if (in_array($page_param, $petugas_pages) && (!isset($_SESSION['role']) || !in_a
 
     <style>
         body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        .icon-box {
+            width: 40px;
+            height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .icon-box-sm {
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
     </style>
 </head>
 
@@ -72,10 +88,10 @@ if (in_array($page_param, $petugas_pages) && (!isset($_SESSION['role']) || !in_a
     <nav class="navbar navbar-expand-lg bg-white border-bottom shadow-sm sticky-top">
         <div class="container">
             <a class="navbar-brand fw-bold text-primary d-flex align-items-center gap-2" href="?p=home">
-                <span class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center p-2">
-                    <i class="bi bi-ticket-perforated-fill"></i>
+                <span class="bg-primary text-white rounded-3 icon-box shadow-sm">
+                    <i class="bi bi-ticket-perforated-fill fs-5"></i>
                 </span>
-                YuiPass
+                <span class="ls-tight">YuiPass</span>
             </a>
             <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <i class="bi bi-list fs-4 text-secondary"></i>
@@ -107,9 +123,9 @@ if (in_array($page_param, $petugas_pages) && (!isset($_SESSION['role']) || !in_a
                         <?php endif; ?>
                         <li class="nav-item dropdown ms-lg-3">
                             <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 p-0" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <div class="bg-primary text-white rounded-pill px-3 py-2 fw-semibold shadow-sm d-flex align-items-center gap-2">
-                                    <i class="bi bi-person-circle fs-5"></i>
-                                    <span class="d-none d-sm-inline"><?= htmlspecialchars($_SESSION['nama']) ?></span>
+                                <div class="bg-primary text-white rounded-pill px-3 py-1 fw-medium shadow-sm d-flex align-items-center gap-2">
+                                    <i class="bi bi-person-circle"></i>
+                                    <span class="d-none d-sm-inline small"><?= htmlspecialchars($_SESSION['nama']) ?></span>
                                 </div>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 p-2 mt-2 animated fadeIn" aria-labelledby="userDropdown" style="min-width: 200px;">

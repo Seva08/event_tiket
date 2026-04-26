@@ -34,64 +34,79 @@ if (isset($_POST['update'])) {
     <div class="row">
         <?php include 'pages/admin/_sidebar.php'; ?>
         <main class="col-md-10 ms-sm-auto px-md-4 py-4">
+            <!-- Breadcrumb & Title -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <h2 class="fw-bold"><i class="bi bi-pencil-square"></i> Edit Voucher</h2>
-                    <p class="text-muted mb-0">Sesuaikan promosi diskon kamu</p>
+                    <h2 class="fw-bold mb-1"><i class="bi bi-pencil-square text-warning me-2"></i>Edit Voucher</h2>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item small"><a href="?p=dashboard_admin" class="text-decoration-none">Dashboard</a></li>
+                            <li class="breadcrumb-item small"><a href="?p=admin_voucher" class="text-decoration-none">Master Voucher</a></li>
+                            <li class="breadcrumb-item small active" aria-current="page">Edit Data</li>
+                        </ol>
+                    </nav>
                 </div>
-                <a href="?p=admin_voucher" class="btn btn-outline-secondary rounded-pill px-4 shadow-sm"><i class="bi bi-arrow-left me-1"></i> Kembali</a>
+                <a href="?p=admin_voucher" class="btn btn-light rounded-pill px-4 border shadow-sm">
+                    <i class="bi bi-arrow-left me-2"></i>Batal & Kembali
+                </a>
             </div>
 
             <div class="row justify-content-center">
-                <div class="col-lg-7">
-                    <div class="card border-0 shadow-sm rounded-4">
-                        <div class="card-body p-4 p-md-5">
+                <div class="col-lg-8 col-xl-6">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                        <div class="card-header bg-white border-0 py-4 px-4 px-md-5 text-center">
+                            <div class="bg-warning bg-opacity-10 text-warning rounded-circle icon-box d-inline-flex mb-3" style="width: 70px; height: 70px;">
+                                <i class="bi bi-ticket-perforated-fill fs-2"></i>
+                            </div>
+                            <h5 class="mb-0 fw-bold">Konfigurasi Voucher</h5>
+                            <small class="text-muted">Perbarui promosi dan kuota ID #VCR-<?= $id_voucher ?></small>
+                        </div>
+                        <div class="card-body px-4 px-md-5 pb-5">
                             <form method="POST">
-                                <div class="mb-4 text-center">
-                                    <div class="d-inline-flex p-3 rounded-circle bg-warning bg-opacity-10 mb-3">
-                                        <i class="bi bi-ticket-perforated fs-1 text-warning"></i>
-                                    </div>
-                                    <h5 class="fw-bold">Perbarui Voucher</h5>
-                                    <p class="text-muted small">ID Voucher: #<?= $id_voucher ?></p>
-                                </div>
-
-                                <div class="mb-4">
-                                    <label class="form-label fw-bold small text-uppercase opacity-75">Kode Voucher</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light border-0"><i class="bi bi-hash"></i></span>
-                                        <input type="text" name="kode_voucher" class="form-control form-control-lg border-0 bg-light fw-bold text-uppercase" value="<?= htmlspecialchars($data['kode_voucher']) ?>" required>
-                                    </div>
-                                </div>
-
-                                <div class="row g-4 mb-4">
-                                    <div class="col-md-6">
-                                        <label class="form-label fw-bold small text-uppercase opacity-75">Potongan Harga</label>
+                                <div class="row g-4">
+                                    <!-- Kode Voucher -->
+                                    <div class="col-12">
+                                        <label class="form-label fw-bold text-muted small text-uppercase">Kode Voucher</label>
                                         <div class="input-group">
-                                            <span class="input-group-text bg-light border-0">Rp</span>
-                                            <input type="number" name="potongan" class="form-control form-control-lg border-0 bg-light" value="<?= $data['potongan'] ?>" required>
+                                            <span class="input-group-text bg-light border-0"><i class="bi bi-upc-scan"></i></span>
+                                            <input type="text" name="kode_voucher" class="form-control form-control-lg border-0 bg-light shadow-none fs-6 fw-bold text-uppercase" value="<?= htmlspecialchars($data['kode_voucher']) ?>" placeholder="Contoh: PROMOAKHIRTAHUN" required>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label fw-bold small text-uppercase opacity-75">Kuota Penggunaan</label>
+
+                                    <!-- Potongan & Kuota -->
+                                    <div class="col-md-7">
+                                        <label class="form-label fw-bold text-muted small text-uppercase">Potongan Harga</label>
                                         <div class="input-group">
-                                            <span class="input-group-text bg-light border-0"><i class="bi bi-people"></i></span>
-                                            <input type="number" name="kuota" class="form-control form-control-lg border-0 bg-light" value="<?= $data['kuota'] ?>" required>
+                                            <span class="input-group-text bg-light border-0 fw-bold">Rp</span>
+                                            <input type="number" name="potongan" class="form-control form-control-lg border-0 bg-light shadow-none fs-6" value="<?= $data['potongan'] ?>" placeholder="0" required>
                                         </div>
                                     </div>
-                                </div>
+                                    <div class="col-md-5">
+                                        <label class="form-label fw-bold text-muted small text-uppercase">Kuota Pakai</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light border-0"><i class="bi bi-calculator"></i></span>
+                                            <input type="number" name="kuota" class="form-control form-control-lg border-0 bg-light shadow-none fs-6" value="<?= $data['kuota'] ?>" placeholder="0" required>
+                                        </div>
+                                    </div>
 
-                                <div class="mb-5">
-                                    <label class="form-label fw-bold small text-uppercase opacity-75">Status Voucher</label>
-                                    <select name="status" class="form-select form-select-lg border-0 bg-light rounded-3" required>
-                                        <option value="aktif" <?= $data['status'] == 'aktif' ? 'selected' : '' ?>>Aktif</option>
-                                        <option value="nonaktif" <?= $data['status'] == 'nonaktif' ? 'selected' : '' ?>>Nonaktif</option>
-                                    </select>
-                                </div>
+                                    <!-- Status -->
+                                    <div class="col-12">
+                                        <label class="form-label fw-bold text-muted small text-uppercase">Status Voucher</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light border-0"><i class="bi bi-toggle-on"></i></span>
+                                            <select name="status" class="form-select form-select-lg border-0 bg-light shadow-none fs-6" required>
+                                                <option value="aktif" <?= $data['status'] == 'aktif' ? 'selected' : '' ?>>Aktif (Bisa Digunakan)</option>
+                                                <option value="nonaktif" <?= $data['status'] == 'nonaktif' ? 'selected' : '' ?>>Nonaktif (Draft)</option>
+                                            </select>
+                                        </div>
+                                    </div>
 
-                                <div class="d-grid pt-2">
-                                    <button type="submit" name="update" class="btn btn-warning btn-lg fw-bold shadow-sm p-3 rounded-pill">
-                                        <i class="bi bi-save-fill me-2"></i> Simpan Perubahan
-                                    </button>
+                                    <!-- Submit Button -->
+                                    <div class="col-12 pt-3">
+                                        <button type="submit" name="update" class="btn btn-warning btn-lg rounded-pill px-5 py-3 fw-bold w-100 shadow border-0 text-white">
+                                            <i class="bi bi-save-fill me-2"></i>Simpan Perubahan Voucher
+                                        </button>
+                                    </div>
                                 </div>
                             </form>
                         </div>

@@ -122,8 +122,8 @@ $query = mysqli_query($conn, "SELECT e.*, v.nama_venue, v.alamat FROM event e JO
     <div class="mb-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h2 class="fw-bold mb-1"><i class="bi bi-tags me-2 text-primary"></i>Promo & Voucher</h2>
-                <p class="text-muted mb-0 small">Gunakan kode voucher di bawah ini saat checkout untuk mendapatkan potongan harga!</p>
+                <h2 class="fw-bold mb-1"><i class="bi bi-tags-fill me-2 text-primary"></i>Promo & Voucher</h2>
+                <p class="text-muted mb-0 small">Klaim voucher menarik untuk pengalaman event lebih hemat!</p>
             </div>
         </div>
 
@@ -140,30 +140,45 @@ $query = mysqli_query($conn, "SELECT e.*, v.nama_venue, v.alamat FROM event e JO
                     $unlimited = $v['kuota'] == 0;
             ?>
             <div class="col-md-6 col-lg-4">
-                <div class="card border-0 shadow-sm position-relative overflow-hidden">
+                <div class="card border-0 shadow-sm rounded-4 position-relative overflow-hidden transition-all h-100 voucher-card">
                     <div class="d-flex h-100">
-                        <!-- Left Part (Discount) -->
-                        <div class="p-3 <?= $is_used ? 'bg-secondary' : 'bg-primary' ?> text-white d-flex flex-column justify-content-center align-items-center text-center col-3 col-md-2 flex-shrink-0">
-                            <small class="small text-uppercase opacity-75">Diskon</small>
-                            <div class="fw-bold">Rp</div>
+                        <!-- Sisi Kiri: Nilai Diskon -->
+                        <div class="p-3 <?= $is_used ? 'bg-secondary' : 'bg-primary' ?> text-white d-flex flex-column justify-content-center align-items-center text-center position-relative" style="width: 100px; flex-shrink: 0;">
+                            <!-- Variasi Punch Holes (Atas & Bawah) -->
+                            <div class="position-absolute bg-white rounded-circle" style="width: 20px; height: 20px; top: -10px; right: -10px; z-index: 2;"></div>
+                            <div class="position-absolute bg-white rounded-circle" style="width: 20px; height: 20px; bottom: -10px; right: -10px; z-index: 2;"></div>
+                            
+                            <i class="bi bi-ticket-perforated mb-2 opacity-50 fs-4"></i>
+                            <div class="fw-bold small opacity-75 text-uppercase">DISKON</div>
                             <div class="fw-bold fs-4"><?= number_format($v['potongan']/1000, 0) ?>k</div>
                         </div>
                         
-                        <!-- Right Part (Details) -->
-                        <div class="p-3 flex-grow-1 d-flex flex-column justify-content-center">
-                            <div class="d-flex justify-content-between align-items-start mb-1">
-                                <span class="badge <?= $is_used ? 'bg-secondary' : 'bg-primary' ?> bg-opacity-10 text-<?= $is_used ? 'secondary' : 'primary' ?> mb-2 small rounded-2">
-                                    <?= $unlimited ? 'Unlimited' : 'Sisa ' . $v['kuota'] ?>
+                        <!-- Garis Sobekan (Dashed Line) -->
+                        <div class="border-start border-2 border-dashed h-100 opacity-25" style="border-style: dashed !important; border-color: #64748b !important;"></div>
+                        
+                        <!-- Sisi Kanan: Info & Kode -->
+                        <div class="p-4 bg-white flex-grow-1 d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge <?= $is_used ? 'bg-secondary' : 'bg-primary' ?> bg-opacity-10 text-<?= $is_used ? 'secondary' : 'primary' ?> px-2 py-1 rounded-pill small" style="font-size: 0.65rem;">
+                                    <i class="bi bi-layers-fill me-1"></i><?= $unlimited ? 'Unlimited' : 'Sisa ' . $v['kuota'] ?>
                                 </span>
                                 <?php if($is_used): ?>
-                                    <span class="text-success small fw-semibold"><i class="bi bi-check-circle-fill me-1"></i>Terpakai</span>
+                                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill small" style="font-size: 0.65rem;"><i class="bi bi-check-circle-fill"></i></span>
                                 <?php endif; ?>
                             </div>
-                            <h6 class="fw-bold mb-2 text-dark font-monospace"><?= $v['kode_voucher'] ?></h6>
-                            <div class="d-flex align-items-center justify-content-between mt-auto">
-                                <small class="text-muted small">Berlaku Semua Tiket</small>
-                                <?php if(!$is_used): ?>
-                                    <button class="btn btn-sm btn-outline-primary py-0 px-2 small rounded-pill" onclick="navigator.clipboard.writeText('<?= $v['kode_voucher'] ?>'); alert('Kode <?= $v['kode_voucher'] ?> disalin!')">Copy</button>
+                            
+                            <h5 class="fw-bold mb-1 text-dark font-monospace tracking-tighter"><?= $v['kode_voucher'] ?></h5>
+                            <p class="text-muted mb-3" style="font-size: 0.75rem;">Berlaku untuk semua jenis tiket event aktif.</p>
+                            
+                            <div class="mt-auto pt-2 border-top border-light">
+                                <?php if($is_used): ?>
+                                    <button class="btn btn-sm btn-light w-100 text-muted disabled rounded-pill" style="font-size: 0.75rem;">Sudah Digunakan</button>
+                                <?php else: ?>
+                                    <button class="btn btn-sm btn-outline-primary w-100 rounded-pill fw-bold transition-all" 
+                                            onclick="navigator.clipboard.writeText('<?= $v['kode_voucher'] ?>'); Swal.fire({icon: 'success', title: 'Kode Disalin!', text: 'Gunakan kode <?= $v['kode_voucher'] ?> saat membeli tiket.', timer: 1500, showConfirmButton: false});" 
+                                            style="font-size: 0.75rem;">
+                                        <i class="bi bi-copy me-1"></i> Salin Kode
+                                    </button>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -171,12 +186,21 @@ $query = mysqli_query($conn, "SELECT e.*, v.nama_venue, v.alamat FROM event e JO
                 </div>
             </div>
             <?php endwhile; else: ?>
-            <div class="col-12 text-center py-4 bg-light rounded-4">
-                <p class="text-muted mb-0"><i class="bi bi-info-circle me-1"></i> Belum ada promo tersedia saat ini.</p>
+            <div class="col-12 text-center py-5 bg-light rounded-4 border border-dashed">
+                <i class="bi bi-ticket-detailed display-4 text-muted opacity-25 d-block mb-3"></i>
+                <p class="text-muted fw-bold mb-0">Belum ada promo tersedia saat ini.</p>
+                <p class="text-muted small">Cek kembali nanti untuk diskon menarik lainnya!</p>
             </div>
             <?php endif; ?>
         </div>
     </div>
+
+    <!-- Tambahkan CSS inline sedikit untuk hover effect -->
+    <style>
+        .voucher-card { transition: all 0.3s ease; }
+        .voucher-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
+        .border-dashed { border-style: dashed !important; }
+    </style>
 
     <!-- ════════════ EVENT LIST ════════════ -->
     <div id="events">

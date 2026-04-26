@@ -15,7 +15,7 @@ if ($f_year > 0) $base_where .= " AND YEAR(o.tanggal_order) = $f_year";
 // 1. Statistik Ringkasan (Cards)
 $q_stats_main = mysqli_query($conn, "
     SELECT 
-        SUM(od.subtotal) as total_omzet,
+        (SELECT SUM(total) FROM orders o $base_where) as total_omzet,
         SUM(od.qty) as total_terjual,
         COUNT(DISTINCT o.id_order) as total_pesanan
     FROM orders o

@@ -13,161 +13,199 @@ $events        = mysqli_query($conn, "SELECT e.*, v.nama_venue, v.alamat FROM ev
 ?>
 
 <div class="container py-4">
-    <div class="row g-4">
+    <!-- Header Greeting -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Dashboard</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item small"><a href="?p=home" class="text-decoration-none">Home</a></li>
+                    <li class="breadcrumb-item small active" aria-current="page">Dashboard</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="bg-white px-3 py-2 rounded-pill shadow-sm border small fw-bold text-primary">
+            <i class="bi bi-clock-history me-2"></i>Sesi Aktif: <?= date('H:i') ?>
+        </div>
+    </div>
 
-        <!-- ── User Sidebar ─────────────────────── -->
-        <div class="col-md-3">
-            <div class="card mb-3 border-0 shadow-sm">
-                <div class="card-body text-center p-4">
-                    <div class="mb-3 mx-auto d-flex align-items-center justify-content-center bg-primary text-white rounded-circle p-3 fs-3">
-                        <i class="bi bi-person-fill fs-2"></i>
+    <div class="row g-4">
+        <!-- Sidebar Profile -->
+        <div class="col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                <div class="card-body p-4 text-center">
+                    <div class="position-relative d-inline-block mb-3">
+                        <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-3" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-person-fill display-6"></i>
+                        </div>
+                        <span class="position-absolute bottom-0 end-0 bg-success border border-white border-3 rounded-circle p-2"></span>
                     </div>
-                    <h6 class="fw-bold mb-1"><?= htmlspecialchars($_SESSION['nama']) ?></h6>
-                    <p class="text-muted mb-3 small">
-                        <?= htmlspecialchars($_SESSION['email'] ?? 'Member') ?>
-                    </p>
-                    <span class="badge bg-primary rounded-pill px-3 py-2 mb-3 small">
-                        <i class="bi bi-person-check me-1"></i>Member Aktif
-                    </span>
+                    <h5 class="fw-bold mb-1"><?= htmlspecialchars($_SESSION['nama'] ?? 'User') ?></h5>
+                    <p class="text-muted small mb-3"><?= htmlspecialchars($_SESSION['email'] ?? 'Member YuiPass') ?></p>
+                    <div class="d-grid gap-2">
+                        <a href="?p=profile" class="btn btn-light btn-sm rounded-pill fw-bold py-2 shadow-sm border-0">
+                            <i class="bi bi-gear me-2"></i>Edit Profil
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer bg-light border-0 p-0">
+                    <div class="list-group list-group-flush small">
+                        <a href="?p=riwayat" class="list-group-item list-group-item-action py-3 border-0 bg-transparent">
+                            <i class="bi bi-receipt me-3 text-primary"></i>Riwayat Pesanan
+                        </a>
+                        <a href="?p=logout" class="list-group-item list-group-item-action py-3 border-0 bg-transparent text-danger">
+                            <i class="bi bi-box-arrow-right me-3"></i>Keluar
+                        </a>
+                    </div>
                 </div>
             </div>
 
-            <!-- Nav menu -->
-            <div class="card border-0 shadow-sm">
-                <div class="list-group list-group-flush rounded-3">
-                    <a href="?p=dashboard_user"
-                       class="list-group-item list-group-item-action d-flex align-items-center gap-2 fw-semibold py-3 active">
-                        <i class="bi bi-speedometer2"></i> Dashboard
-                    </a>
-                    <a href="?p=riwayat"
-                       class="list-group-item list-group-item-action d-flex align-items-center gap-2 py-3">
-                        <i class="bi bi-clock-history"></i> Riwayat Pesanan
-                    </a>
-                    <a href="?p=home"
-                       class="list-group-item list-group-item-action d-flex align-items-center gap-2 py-3">
-                        <i class="bi bi-calendar-event"></i> Lihat Event
-                    </a>
-                    <a href="?p=logout"
-                       class="list-group-item list-group-item-action d-flex align-items-center gap-2 py-3 text-danger">
-                        <i class="bi bi-box-arrow-right"></i> Logout
-                    </a>
+            <!-- Help Card -->
+            <div class="card border-0 bg-dark text-white rounded-4 shadow-sm overflow-hidden">
+                <div class="card-body p-4 position-relative z-1">
+                    <h6 class="fw-bold mb-2">Butuh Bantuan?</h6>
+                    <p class="small opacity-75 mb-3">Hubungi tim support kami jika Anda mengalami kendala transaksi.</p>
+                    <a href="#" class="btn btn-primary btn-sm rounded-pill px-3">WhatsApp Kami</a>
                 </div>
+                <i class="bi bi-headset position-absolute end-0 bottom-0 opacity-25 z-0 display-4 m-2"></i>
             </div>
         </div>
 
-        <!-- ── Main Content ─────────────────────── -->
-        <div class="col-md-9">
-            <!-- Greeting banner -->
-            <div class="card mb-4 border-0 bg-primary text-white shadow-sm">
-                <div class="card-body p-4 d-flex align-items-center gap-3">
-                    <div>
-                        <h5 class="text-white fw-bold mb-1">
-                            Hai, <?= htmlspecialchars(explode(' ', $_SESSION['nama'])[0]) ?>! 👋
-                        </h5>
-                        <p class="text-white mb-0 opacity-75 small">
-                            Selamat datang kembali. Yuk cek tiket dan event favoritmu.
-                        </p>
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            <!-- Welcome Banner -->
+            <div class="card border-0 bg-primary text-white rounded-4 shadow-sm mb-4 position-relative overflow-hidden">
+                <div class="card-body p-4 p-md-5 position-relative z-1">
+                    <div class="col-md-8">
+                        <h2 class="fw-bold mb-2 text-white">Selamat Datang, <?= htmlspecialchars(explode(' ', $_SESSION['nama'])[0]) ?>! ✨</h2>
+                        <p class="mb-4 opacity-75">Senang melihatmu kembali. Semua tiket dan riwayat pesananmu tersimpan rapi di sini.</p>
+                        <a href="?p=home" class="btn btn-light rounded-pill px-4 fw-bold">Cari Event Seru</a>
                     </div>
-                    <i class="bi bi-emoji-smile-fill text-white ms-auto d-none d-md-block display-4 opacity-25"></i>
                 </div>
+                <i class="bi bi-stars position-absolute end-0 top-0 display-1 opacity-25 m-4"></i>
             </div>
 
-            <!-- Stats -->
+            <!-- Statistics Premium -->
             <div class="row g-3 mb-4">
-                <?php $stats = [
-                    ['primary','bi-receipt',         $total_pesanan, 'Total Pesanan'],
-                    ['warning','bi-clock',            $pending,       'Pending'],
-                    ['success','bi-check-circle-fill',$sudah_bayar,   'Sudah Bayar'],
-                    ['info',   'bi-ticket-perforated',$total_tiket,   'Tiket Saya'],
-                ]; foreach ($stats as $s): ?>
                 <div class="col-6 col-md-3">
-                    <div class="card border-0 bg-<?= $s[0] ?> text-white shadow-sm h-100 p-3">
-                        <i class="bi <?= $s[1] ?> mb-2 d-block fs-4"></i>
-                        <h3 class="mb-0 display-6 fw-bold"><?= $s[2] ?></h3>
-                        <p class="mb-0 small opacity-75"><?= $s[3] ?></p>
+                    <div class="card border-0 shadow-sm rounded-4 h-100 bg-primary text-white overflow-hidden position-relative transition-transform hover-scale">
+                        <div class="card-body p-3 position-relative z-1 text-center">
+                            <span class="badge bg-white bg-opacity-25 rounded-pill px-3 py-1 mb-2 small fw-bold">Total Order</span>
+                            <h3 class="fw-bold mb-0 display-6"><?= $total_pesanan ?></h3>
+                        </div>
+                        <i class="bi bi-receipt position-absolute end-0 bottom-0 opacity-25 z-0 display-4 m-1" style="transform: translate(10%, 10%);"></i>
                     </div>
                 </div>
-                <?php endforeach; ?>
+                <div class="col-6 col-md-3">
+                    <div class="card border-0 shadow-sm rounded-4 h-100 bg-warning text-white overflow-hidden position-relative transition-transform hover-scale">
+                        <div class="card-body p-3 position-relative z-1 text-center">
+                            <span class="badge bg-white bg-opacity-25 rounded-pill px-3 py-1 mb-2 small fw-bold">Pending</span>
+                            <h3 class="fw-bold mb-0 display-6"><?= $pending ?></h3>
+                        </div>
+                        <i class="bi bi-clock position-absolute end-0 bottom-0 opacity-25 z-0 display-4 m-1" style="transform: translate(10%, 10%);"></i>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card border-0 shadow-sm rounded-4 h-100 bg-success text-white overflow-hidden position-relative transition-transform hover-scale">
+                        <div class="card-body p-3 position-relative z-1 text-center">
+                            <span class="badge bg-white bg-opacity-25 rounded-pill px-3 py-1 mb-2 small fw-bold">Lunas</span>
+                            <h3 class="fw-bold mb-0 display-6"><?= $sudah_bayar ?></h3>
+                        </div>
+                        <i class="bi bi-check-circle position-absolute end-0 bottom-0 opacity-25 z-0 display-4 m-1" style="transform: translate(10%, 10%);"></i>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card border-0 shadow-sm rounded-4 h-100 bg-info text-white overflow-hidden position-relative transition-transform hover-scale">
+                        <div class="card-body p-3 position-relative z-1 text-center">
+                            <span class="badge bg-white bg-opacity-25 rounded-pill px-3 py-1 mb-2 small fw-bold">Tiket Aktif</span>
+                            <h3 class="fw-bold mb-0 display-6"><?= $total_tiket ?></h3>
+                        </div>
+                        <i class="bi bi-ticket-perforated position-absolute end-0 bottom-0 opacity-25 z-0 display-4 m-1" style="transform: translate(10%, 10%);"></i>
+                    </div>
+                </div>
             </div>
 
-            <!-- Event terbaru -->
-            <div class="card border-0 shadow-sm rounded-3">
-                <div class="card-header bg-white border-0 pt-4 pb-2 px-4 d-flex justify-content-between align-items-center">
-                    <h5 class="fw-bold mb-0"><i class="bi bi-fire me-2 text-warning"></i>Event Tersedia</h5>
-                    <a href="?p=home" class="btn btn-sm btn-outline-primary rounded-pill">Lihat Semua</a>
+            <!-- Recent Orders Section -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+                <div class="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-clock-history text-primary me-2"></i>Transaksi Terbaru</h5>
+                    <a href="?p=riwayat" class="btn btn-sm btn-link text-decoration-none fw-bold small">Lihat Riwayat</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr class="small text-muted text-uppercase ls-1">
+                                    <th class="px-4 py-3 border-0">ID Order</th>
+                                    <th class="px-4 py-3 border-0">Tgl Pesan</th>
+                                    <th class="px-4 py-3 border-0 text-center">Status</th>
+                                    <th class="px-4 py-3 border-0 text-end">Total Bayar</th>
+                                    <th class="px-4 py-3 border-0 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php 
+                                $recent_orders = mysqli_query($conn, "SELECT * FROM orders WHERE id_user = $user_id ORDER BY tanggal_order DESC LIMIT 3");
+                                if (mysqli_num_rows($recent_orders) > 0):
+                                    while($ro = mysqli_fetch_assoc($recent_orders)):
+                                        $s_color = ($ro['status'] == 'paid' ? 'success' : ($ro['status'] == 'pending' ? 'warning' : 'danger'));
+                                ?>
+                                <tr>
+                                    <td class="px-4 py-3 fw-bold small">#<?= $ro['id_order'] ?></td>
+                                    <td class="px-4 py-3 small"><?= date('d M Y', strtotime($ro['tanggal_order'])) ?></td>
+                                    <td class="px-4 py-3 text-center">
+                                        <span class="badge bg-<?= $s_color ?>-subtle text-<?= $s_color ?> rounded-pill px-3 py-1 small fw-bold">
+                                            <?= strtoupper($ro['status']) ?>
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3 text-end fw-bold small text-primary">Rp<?= number_format($ro['total'], 0, ',', '.') ?></td>
+                                    <td class="px-4 py-3 text-center">
+                                        <?php if($ro['status'] == 'pending'): ?>
+                                            <a href="?p=order_bayar&id=<?= $ro['id_order'] ?>" class="btn btn-sm btn-primary rounded-pill px-3 small fw-bold">Bayar</a>
+                                        <?php else: ?>
+                                            <a href="?p=riwayat&detail=<?= $ro['id_order'] ?>" class="btn btn-sm btn-light rounded-pill px-3 small fw-bold shadow-sm border">Detail</a>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                                <?php endwhile; else: ?>
+                                <tr>
+                                    <td colspan="5" class="text-center py-5 text-muted small">Belum ada transaksi terbaru.</td>
+                                </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Suggested Events -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-fire text-warning me-2"></i>Event Populer</h5>
+                    <a href="?p=home" class="btn btn-sm btn-light rounded-pill px-3 fw-bold border shadow-sm small">Jelajahi Semua</a>
                 </div>
                 <div class="card-body p-4">
                     <div class="row g-4">
-                        <?php while ($d = mysqli_fetch_assoc($events)):
-                            $tanggal   = date('d M Y', strtotime($d['tanggal']));
-                            $tgl_short = date('d', strtotime($d['tanggal']));
-                            $bln_short = date('M Y', strtotime($d['tanggal']));
+                        <?php 
+                        mysqli_data_seek($events, 0); // Reset result pointer
+                        while ($d = mysqli_fetch_assoc($events)):
                             $is_passed = strtotime($d['tanggal']) < strtotime('today');
+                            if($is_passed) continue; // Only show active ones in suggestions
                         ?>
                         <div class="col-md-6 col-lg-4">
-                            <div class="card h-100 border shadow-sm <?= $is_passed ? 'opacity-75' : '' ?>">
-                                <?php if($d['gambar']): ?>
-                                    <div class="position-relative ratio ratio-16x9 overflow-hidden">
-                                        <img src="uploads/<?= $d['gambar'] ?>" alt="<?= htmlspecialchars($d['nama_event']) ?>" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover">
-                                        <div class="position-absolute top-0 end-0 m-2 bg-white rounded-3 shadow-sm p-2 text-center">
-                                            <div class="text-primary fw-bold fs-6 lh-1"><?= $tgl_short ?></div>
-                                            <div class="text-muted small fw-bold text-uppercase"><?= $bln_short ?></div>
-                                        </div>
-                                        <?php if($is_passed): ?>
-                                        <div class="position-absolute top-0 start-0 m-2">
-                                            <span class="badge bg-danger rounded-pill small fw-bold">Selesai</span>
-                                        </div>
-                                        <?php endif; ?>
+                            <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative hover-translate-y transition-all">
+                                <div class="ratio ratio-16x9">
+                                    <img src="uploads/<?= $d['gambar'] ?>" class="object-fit-cover" alt="<?= $d['nama_event'] ?>">
+                                </div>
+                                <div class="card-body p-3">
+                                    <div class="badge bg-primary-subtle text-primary mb-2 rounded-pill small fw-bold">
+                                        <i class="bi bi-calendar3 me-1"></i><?= date('d M Y', strtotime($d['tanggal'])) ?>
                                     </div>
-                                    <div class="card-body px-3 py-3">
-                                        <h6 class="fw-bold mb-2 lh-sm text-truncate"><?= htmlspecialchars($d['nama_event']) ?></h6>
-                                        <div class="d-flex align-items-start gap-2 mb-1">
-                                            <i class="bi bi-geo-alt-fill mt-1 text-danger small"></i>
-                                            <div>
-                                                <div class="fw-bold small"><?= htmlspecialchars($d['nama_venue']) ?></div>
-                                                <div class="text-muted small text-truncate col-8"><?= htmlspecialchars($d['alamat']) ?></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                <?php else: ?>
-                                    <div class="card-header position-relative <?= $is_passed ? 'bg-secondary' : 'bg-primary' ?> text-white p-3">
-                                        <div class="d-flex justify-content-between align-items-start position-relative z-1">
-                                            <div class="col-8">
-                                                <span class="badge bg-white bg-opacity-25 mb-2 rounded-pill small">
-                                                    <i class="bi bi-calendar3 me-1"></i><?= $tanggal ?>
-                                                </span>
-                                                <?php if($is_passed): ?>
-                                                <span class="badge mb-2 ms-1 bg-danger rounded-pill small">Selesai</span>
-                                                <?php endif; ?>
-                                                <h6 class="mb-0 fw-bold lh-sm text-white text-truncate small"><?= htmlspecialchars($d['nama_event']) ?></h6>
-                                            </div>
-                                            <div class="text-center ms-2 flex-shrink-0 bg-white bg-opacity-25 rounded-3 p-2 px-3">
-                                                <div class="fs-5 fw-bold lh-1"><?= $tgl_short ?></div>
-                                                <div class="small opacity-75 text-uppercase"><?= date('M', strtotime($d['tanggal'])) ?></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="card-body p-3">
-                                        <div class="d-flex align-items-start gap-2 mb-1">
-                                            <i class="bi bi-geo-alt-fill mt-1 text-danger small"></i>
-                                            <div>
-                                                <div class="fw-bold small"><?= htmlspecialchars($d['nama_venue']) ?></div>
-                                                <div class="text-muted small text-truncate col-8"><?= htmlspecialchars($d['alamat']) ?></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                <?php endif; ?>
-                                <!-- Footer -->
-                                <div class="card-footer bg-white border-0 px-3 pb-3 pt-0">
-                                    <?php if($is_passed): ?>
-                                        <a href="?p=event_detail&id=<?= $d['id_event'] ?>" class="btn btn-secondary btn-sm w-100 rounded-pill">
-                                            <i class="bi bi-calendar-x me-2"></i>Lihat Detail
-                                        </a>
-                                    <?php else: ?>
-                                        <a href="?p=event_detail&id=<?= $d['id_event'] ?>" class="btn btn-primary btn-sm w-100 rounded-pill">
-                                            <i class="bi bi-ticket-perforated me-2"></i>Lihat Tiket
-                                        </a>
-                                    <?php endif; ?>
+                                    <h6 class="fw-bold text-dark text-truncate mb-2"><?= htmlspecialchars($d['nama_event']) ?></h6>
+                                    <p class="text-muted small text-truncate-2 mb-3" style="font-size: 0.75rem;">
+                                        <i class="bi bi-geo-alt me-1"></i><?= htmlspecialchars($d['nama_venue']) ?>
+                                    </p>
+                                    <a href="?p=event_detail&id=<?= $d['id_event'] ?>" class="btn btn-primary w-100 rounded-pill small fw-bold py-2 shadow-sm">Lihat Tiket</a>
                                 </div>
                             </div>
                         </div>
@@ -175,6 +213,19 @@ $events        = mysqli_query($conn, "SELECT e.*, v.nama_venue, v.alamat FROM ev
                     </div>
                 </div>
             </div>
-        </div><!-- /col-md-9 -->
+        </div>
     </div>
 </div>
+
+<style>
+.ls-1 { letter-spacing: 1px; }
+.hover-scale:hover { transform: translateY(-5px) scale(1.02); z-index: 10; }
+.hover-translate-y:hover { transform: translateY(-5px); }
+.transition-all { transition: all 0.3s ease; }
+.text-truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+</style>

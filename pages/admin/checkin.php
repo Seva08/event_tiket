@@ -61,55 +61,64 @@ if (isset($_POST['proses_checkin'])) {
 $result = isset($_SESSION['last_checkin_admin']) ? $_SESSION['last_checkin_admin'] : null;
 unset($_SESSION['last_checkin_admin']);
 ?>
-<div class="container-fluid"><div class="row">
-    <?php include 'pages/admin/_sidebar.php'; ?>
-    <main class="col-md-10 ms-sm-auto px-md-4 py-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h2 class="fw-bold"><i class="bi bi-qr-code-scan"></i> Check-in Tiket</h2>
-                <p class="text-muted mb-0">Scan atau masukkan kode tiket pengunjung untuk validasi</p>
+<div class="container-fluid">
+    <div class="row">
+        <?php include 'pages/admin/_sidebar.php'; ?>
+        
+        <main class="col-md-10 ms-sm-auto px-md-4 py-4">
+            <!-- Breadcrumb & Title -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold mb-1"><i class="bi bi-qr-code-scan text-primary me-2"></i>Check-in Tiket</h2>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item small"><a href="?p=dashboard_admin" class="text-decoration-none">Dashboard</a></li>
+                            <li class="breadcrumb-item small active" aria-current="page">Check-in Management</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="bg-white px-3 py-2 rounded-pill shadow-sm border small fw-bold">
+                    <i class="bi bi-calendar3 text-primary me-2"></i><?= date('d M Y') ?>
+                </div>
             </div>
-            <span class="badge bg-primary fs-6 px-3 py-2"><i class="bi bi-calendar3"></i> <?= date('d M Y') ?></span>
-        </div>
 
-        <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-6">
-                <div class="card border-0 shadow rounded-4 overflow-hidden">
-                    <div class="card-header bg-primary text-white text-center py-4 border-0">
-                        <div class="bg-white bg-opacity-25 rounded-circle d-inline-flex align-items-center justify-content-center mb-2 p-3">
-                            <i class="bi bi-upc-scan fs-1"></i>
-                        </div>
-                        <h4 class="mb-0 fw-bold">Proses Check-in</h4>
-                    </div>
-                    <div class="card-body p-4 bg-light">
-
-                        <!-- Camera Scan Button & Container -->
-                        <div class="text-center mb-4">
-                            <button type="button" id="btnToggleCamera" class="btn btn-outline-primary rounded-pill px-4 py-2 fw-bold shadow-sm">
-                                <i class="bi bi-camera me-2"></i> Buka Kamera Scan
-                            </button>
-                            <div id="reader-container" class="mt-3 d-none">
-                                <div id="reader" class="mx-auto rounded-3 border border-3 border-primary w-100 col-md-8 col-lg-6"></div>
-                                <button type="button" id="btnStopCamera" class="btn btn-sm btn-danger mt-2 rounded-pill px-3">
-                                    <i class="bi bi-x-circle me-1"></i> Tutup Kamera
-                                </button>
+            <div class="row justify-content-center">
+                <div class="col-md-8 col-lg-6">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                        <div class="card-header bg-primary text-white text-center py-4 border-0">
+                            <div class="bg-white bg-opacity-25 rounded-circle icon-box d-inline-flex mb-2" style="width: 80px; height: 80px;">
+                                <i class="bi bi-upc-scan fs-1"></i>
                             </div>
+                            <h4 class="mb-0 fw-bold">Pintu Masuk Event</h4>
                         </div>
-
-                        <form method="POST" class="mt-2" id="checkinForm">
-                            <input type="hidden" name="proses_checkin" value="1">
-                            <div class="mb-4">
-                                <label class="form-label fw-bold text-muted text-uppercase small tracking-wide">Masukkan Kode Tiket</label>
-                                <div class="input-group input-group-lg shadow-sm rounded-3 overflow-hidden">
-                                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-upc-scan"></i></span>
-                                    <input type="text" name="kode_tiket" id="kode_tiket" class="form-control border-start-0 ps-0 fw-bold text-uppercase shadow-none" placeholder="Contoh: TKT-ABCD1234" required autofocus>
-                                    <button class="btn btn-primary fw-bold px-4" type="submit">
-                                        <i class="bi bi-check-lg me-1"></i> Check-in
+                        <div class="card-body p-4 p-md-5 bg-white">
+                            <!-- Camera Scan Button & Container -->
+                            <div class="text-center mb-4">
+                                <button type="button" id="btnToggleCamera" class="btn btn-outline-primary rounded-pill px-4 py-2 fw-bold shadow-sm transition-transform hover-scale">
+                                    <i class="bi bi-camera-fill me-2"></i> Buka Kamera Scanner
+                                </button>
+                                <div id="reader-container" class="mt-3 d-none">
+                                    <div id="reader" class="mx-auto rounded-4 border border-4 border-primary overflow-hidden shadow-lg w-100"></div>
+                                    <button type="button" id="btnStopCamera" class="btn btn-sm btn-danger mt-3 rounded-pill px-4">
+                                        <i class="bi bi-x-circle me-1"></i> Tutup Kamera
                                     </button>
                                 </div>
-                                <div class="form-text mt-2"><i class="bi bi-info-circle me-1"></i>Gunakan kamera, hardware scanner, atau ketik kode manual.</div>
                             </div>
-                        </form>
+
+                            <form method="POST" id="checkinForm">
+                                <input type="hidden" name="proses_checkin" value="1">
+                                <div class="mb-2">
+                                    <label class="form-label fw-bold text-muted text-uppercase small ls-1">Masukkan Kode Tiket</label>
+                                    <div class="input-group input-group-lg shadow-sm rounded-3 overflow-hidden border">
+                                        <span class="input-group-text bg-white border-0 text-muted"><i class="bi bi-hash"></i></span>
+                                        <input type="text" name="kode_tiket" id="kode_tiket" class="form-control border-0 ps-0 fw-bold text-uppercase shadow-none fs-6" placeholder="Kode Tiket (Scan di sini...)" required autofocus>
+                                        <button class="btn btn-primary fw-bold px-4" type="submit">
+                                            Check-in
+                                        </button>
+                                    </div>
+                                    <div class="form-text mt-3 text-center small text-muted"><i class="bi bi-info-circle me-1"></i>Gunakan hardware scanner atau kamera HP untuk proses instan.</div>
+                                </div>
+                            </form>
 
                         <?php if ($result): ?>
                             <div class="card mt-4 border-0 bg-info bg-opacity-10 rounded-3">

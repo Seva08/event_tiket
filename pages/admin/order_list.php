@@ -182,7 +182,7 @@ $orders = mysqli_query($conn, "
                     <table class="table table-hover align-middle mb-0">
                         <thead class="bg-light">
                             <tr>
-                                <th class="ps-4 py-3 small text-uppercase fw-bold text-muted">#Order</th>
+                                <th class="ps-4 py-3 small text-uppercase fw-bold text-muted">No</th>
                                 <th class="py-3 small text-uppercase fw-bold text-muted">Customer</th>
                                 <th class="py-3 small text-uppercase fw-bold text-muted">Event & Tiket</th>
                                 <th class="py-3 text-center small text-uppercase fw-bold text-muted">Status</th>

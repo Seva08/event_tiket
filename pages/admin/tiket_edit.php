@@ -49,72 +49,84 @@ if (isset($_POST['update'])) {
     <div class="row">
         <?php include 'pages/admin/_sidebar.php'; ?>
         <main class="col-md-10 ms-sm-auto px-md-4 py-4">
+            <!-- Breadcrumb & Title -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <h2 class="fw-bold"><i class="bi bi-pencil-square"></i> Edit Tiket</h2>
-                    <p class="text-muted mb-0">Sesuaikan ketersediaan dan harga tiket</p>
+                    <h2 class="fw-bold mb-1"><i class="bi bi-pencil-square text-warning me-2"></i>Edit Tiket</h2>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item small"><a href="?p=dashboard_admin" class="text-decoration-none">Dashboard</a></li>
+                            <li class="breadcrumb-item small"><a href="?p=admin_tiket" class="text-decoration-none">Master Tiket</a></li>
+                            <li class="breadcrumb-item small active" aria-current="page">Edit Data</li>
+                        </ol>
+                    </nav>
                 </div>
-                <a href="?p=admin_tiket" class="btn btn-outline-secondary rounded-pill px-4 shadow-sm"><i class="bi bi-arrow-left me-1"></i> Kembali</a>
+                <a href="?p=admin_tiket" class="btn btn-light rounded-pill px-4 border shadow-sm">
+                    <i class="bi bi-arrow-left me-2"></i>Batal & Kembali
+                </a>
             </div>
 
             <div class="row justify-content-center">
-                <div class="col-lg-7">
-                    <div class="card border-0 shadow-sm rounded-4">
-                        <div class="card-body p-4 p-md-5">
+                <div class="col-lg-8 col-xl-6">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                        <div class="card-header bg-white border-0 py-4 px-4 px-md-5 text-center">
+                            <div class="bg-warning bg-opacity-10 text-warning rounded-circle icon-box d-inline-flex mb-3" style="width: 70px; height: 70px;">
+                                <i class="bi bi-ticket-detailed-fill fs-2"></i>
+                            </div>
+                            <h5 class="mb-0 fw-bold">Konfigurasi Tiket</h5>
+                            <small class="text-muted">Perbarui kategori dan kuota tiket ID #TKT-<?= $id_tiket ?></small>
+                        </div>
+                        <div class="card-body px-4 px-md-5 pb-5">
                             <form method="POST">
-                                <div class="mb-4 text-center">
-                                    <div class="d-inline-flex p-3 rounded-circle bg-warning bg-opacity-10 mb-3">
-                                        <i class="bi bi-ticket-detailed fs-1 text-warning"></i>
-                                    </div>
-                                    <h5 class="fw-bold">Perbarui Kategori</h5>
-                                    <p class="text-muted small">ID Tiket: #<?= $id_tiket ?></p>
-                                </div>
-
-                                <div class="mb-4">
-                                    <label class="form-label fw-bold small text-uppercase opacity-75">Nama Event</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light border-0"><i class="bi bi-calendar-event"></i></span>
-                                        <select name="id_event" class="form-select form-select-lg border-0 bg-light" required>
-                                            <?php
-                                            $q_ev = mysqli_query($conn, "SELECT id_event, nama_event FROM event ORDER BY tanggal DESC");
-                                            while($ev = mysqli_fetch_assoc($q_ev)) {
-                                                $sel = ($ev['id_event'] == $data['id_event']) ? 'selected' : '';
-                                                echo "<option value='{$ev['id_event']}' $sel>{$ev['nama_event']}</option>";
-                                            }
-                                            ?>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="mb-4">
-                                    <label class="form-label fw-bold small text-uppercase opacity-75">Nama Kategori Tiket</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light border-0"><i class="bi bi-tag"></i></span>
-                                        <input type="text" name="nama_tiket" class="form-control form-control-lg border-0 bg-light" value="<?= htmlspecialchars($data['nama_tiket']) ?>" required>
-                                    </div>
-                                </div>
-
-                                <div class="row g-4 mb-5">
-                                    <div class="col-md-6">
-                                        <label class="form-label fw-bold small text-uppercase opacity-75">Harga Tiket</label>
+                                <div class="row g-4">
+                                    <!-- Pilih Event -->
+                                    <div class="col-12">
+                                        <label class="form-label fw-bold text-muted small text-uppercase">Pilih Event</label>
                                         <div class="input-group">
-                                            <span class="input-group-text bg-light border-0">Rp</span>
-                                            <input type="number" name="harga" class="form-control form-control-lg border-0 bg-light" value="<?= $data['harga'] ?>" required>
+                                            <span class="input-group-text bg-light border-0"><i class="bi bi-calendar-check"></i></span>
+                                            <select name="id_event" class="form-select form-select-lg border-0 bg-light shadow-none fs-6" required>
+                                                <?php
+                                                $q_ev = mysqli_query($conn, "SELECT id_event, nama_event FROM event ORDER BY tanggal DESC");
+                                                while($ev = mysqli_fetch_assoc($q_ev)) {
+                                                    $sel = ($ev['id_event'] == $data['id_event']) ? 'selected' : '';
+                                                    echo "<option value='{$ev['id_event']}' $sel>{$ev['nama_event']}</option>";
+                                                }
+                                                ?>
+                                            </select>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label fw-bold small text-uppercase opacity-75">Kuota (Jumlah)</label>
+
+                                    <!-- Nama Tiket -->
+                                    <div class="col-12">
+                                        <label class="form-label fw-bold text-muted small text-uppercase">Nama Kategori Tiket</label>
                                         <div class="input-group">
-                                            <span class="input-group-text bg-light border-0"><i class="bi bi-people"></i></span>
-                                            <input type="number" name="kuota" class="form-control form-control-lg border-0 bg-light" value="<?= $data['kuota'] ?>" required>
+                                            <span class="input-group-text bg-light border-0"><i class="bi bi-tag"></i></span>
+                                            <input type="text" name="nama_tiket" class="form-control form-control-lg border-0 bg-light shadow-none fs-6" value="<?= htmlspecialchars($data['nama_tiket']) ?>" placeholder="Contoh: VIP, Reguler, Presale" required>
                                         </div>
                                     </div>
-                                </div>
 
-                                <div class="d-grid pt-2">
-                                    <button type="submit" name="update" class="btn btn-warning btn-lg fw-bold shadow-sm p-3 rounded-pill">
-                                        <i class="bi bi-save-fill me-2"></i> Simpan Perubahan
-                                    </button>
+                                    <!-- Harga & Kuota -->
+                                    <div class="col-md-7">
+                                        <label class="form-label fw-bold text-muted small text-uppercase">Harga Tiket</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light border-0 fw-bold">Rp</span>
+                                            <input type="number" name="harga" class="form-control form-control-lg border-0 bg-light shadow-none fs-6" value="<?= $data['harga'] ?>" placeholder="0" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <label class="form-label fw-bold text-muted small text-uppercase">Jumlah Kuota</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light border-0"><i class="bi bi-box-seam"></i></span>
+                                            <input type="number" name="kuota" class="form-control form-control-lg border-0 bg-light shadow-none fs-6" value="<?= $data['kuota'] ?>" placeholder="0" required>
+                                        </div>
+                                    </div>
+
+                                    <!-- Submit Button -->
+                                    <div class="col-12 pt-3">
+                                        <button type="submit" name="update" class="btn btn-warning btn-lg rounded-pill px-5 py-3 fw-bold w-100 shadow border-0 text-white">
+                                            <i class="bi bi-save-fill me-2"></i>Simpan Perubahan Tiket
+                                        </button>
+                                    </div>
                                 </div>
                             </form>
                         </div>

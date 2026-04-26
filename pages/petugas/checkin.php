@@ -64,55 +64,32 @@ if (isset($_POST['proses_checkin'])) {
 $result = isset($_SESSION['last_checkin']) ? $_SESSION['last_checkin'] : null;
 unset($_SESSION['last_checkin']);
 ?>
-<div class="container-fluid"><div class="row">
-    <nav class="col-md-2 d-none d-md-block bg-dark py-2" id="adminSidebar">
-        <div class="px-3 py-3 mb-1">
-            <div class="d-flex align-items-center gap-2">
-                <span class="bg-success text-white rounded-2 d-inline-flex align-items-center justify-content-center p-2">
-                    <i class="bi bi-person-badge-fill small"></i>
-                </span>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar Petugas -->
+        <?php include 'pages/admin/_sidebar.php'; ?>
+        
+        <main class="col-md-10 ms-sm-auto px-md-4 py-4">
+            <!-- Breadcrumb & Title -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <div class="text-light fw-bold small lh-sm">Panel Petugas</div>
-                    <div class="text-secondary small"><?= htmlspecialchars($_SESSION['nama'] ?? '') ?></div>
+                    <h2 class="fw-bold mb-1"><i class="bi bi-qr-code-scan text-primary me-2"></i>Scan Check-in</h2>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item small"><a href="?p=dashboard_petugas" class="text-decoration-none">Dashboard</a></li>
+                            <li class="breadcrumb-item small active" aria-current="page">Scan Tiket</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="bg-white px-3 py-2 rounded-pill shadow-sm border small fw-bold">
+                    <i class="bi bi-clock-history text-primary me-2"></i>Live Monitoring
                 </div>
             </div>
-        </div>
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link text-light d-flex align-items-center gap-2 mx-2 rounded-2 <?= (isset($_GET['p']) && $_GET['p'] === 'dashboard_petugas') ? 'active bg-primary' : '' ?>"
-                   href="?p=dashboard_petugas">
-                    <i class="bi bi-speedometer2"></i> Dashboard
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-light d-flex align-items-center gap-2 mx-2 rounded-2 <?= (isset($_GET['p']) && $_GET['p'] === 'petugas_checkin') ? 'active bg-primary' : '' ?>"
-                   href="?p=petugas_checkin">
-                    <i class="bi bi-qr-code-scan"></i> Scan Check-in
-                </a>
-            </li>
-            <li><div class="text-secondary fw-bold text-uppercase px-3 pt-3 pb-1 small">AKUN</div></li>
-            <li class="nav-item">
-                <a class="nav-link text-light d-flex align-items-center gap-2 mx-2 rounded-2 text-danger"
-                   href="?p=logout">
-                    <i class="bi bi-box-arrow-right"></i> Logout
-                </a>
-            </li>
-        </ul>
-    </nav>
-    <main class="col-md-10 ms-sm-auto px-md-4 py-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h2 class="fw-bold"><i class="bi bi-qr-code-scan"></i> Scan Check-in Petugas</h2>
-                <p class="text-muted mb-0">Scan atau masukkan kode tiket pengunjung untuk validasi</p>
-            </div>
-            <span class="badge bg-primary fs-6 px-3 py-2"><i class="bi bi-calendar3"></i> <?= date('d M Y') ?></span>
-        </div>
-
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-6">
                 <div class="card border-0 shadow rounded-4 overflow-hidden">
                     <div class="card-header bg-success text-white text-center py-4 border-0">
-                        <div class="bg-white bg-opacity-25 rounded-circle d-inline-flex align-items-center justify-content-center mb-2 p-3">
+                        <div class="bg-white bg-opacity-25 rounded-circle icon-box d-inline-flex mb-2" style="width: 80px; height: 80px;">
                             <i class="bi bi-upc-scan fs-1"></i>
                         </div>
                         <h4 class="mb-0 fw-bold">Proses Check-in</h4>
