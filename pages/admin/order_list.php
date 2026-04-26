@@ -103,21 +103,20 @@ $orders = mysqli_query($conn, "
                         <i class="bi bi-receipt-cutoff fs-3 text-primary"></i>
                     </div>
                     <div>
-                        <h2 class="fw-bold mb-0" style="letter-spacing: -0.5px;">Manajemen Order</h2>
+                        <h2 class="fw-bold mb-0">Manajemen Order</h2>
                         <p class="text-muted mb-0 small">Verifikasi & kelola transaksi masuk</p>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
-                <form method="GET" action="index.php" class="position-relative search-box">
+                <form method="GET" action="index.php" class="position-relative">
                     <input type="hidden" name="p" value="admin_order_list">
                     <input type="hidden" name="status" value="<?= $filter_status ?>">
-                    <input type="text" name="q" class="form-control border-0 shadow-sm ps-5 py-2 fw-medium" 
-                           placeholder="Cari ID, nama, atau email..." value="<?= htmlspecialchars($q) ?>"
-                           style="border-radius:12px; height: 48px;">
-                    <i class="bi bi-search position-absolute text-muted fs-5" style="left:18px; top:50%; transform:translateY(-50%);"></i>
+                    <input type="text" name="q" class="form-control shadow-sm ps-5 py-2 fw-medium rounded-3" 
+                           placeholder="Cari ID, nama, atau email..." value="<?= htmlspecialchars($q) ?>">
+                    <i class="bi bi-search position-absolute text-muted fs-5 ms-3 top-50 translate-middle-y"></i>
                     <?php if($q): ?>
-                        <a href="?p=admin_order_list&status=<?= $filter_status ?>" class="position-absolute text-muted btn-clear-search" style="right:15px; top:50%; transform:translateY(-50%);">
+                        <a href="?p=admin_order_list&status=<?= $filter_status ?>" class="position-absolute text-muted me-3 top-50 translate-middle-y end-0">
                             <i class="bi bi-x-circle-fill fs-5"></i>
                         </a>
                     <?php endif; ?>
@@ -125,18 +124,18 @@ $orders = mysqli_query($conn, "
             </div>
             <div class="col-md-2 text-md-end">
                 <div class="p-2 px-3 bg-white shadow-sm rounded-3 d-inline-block border">
-                    <small class="text-muted d-block" style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700;">Total</small>
+                    <small class="text-muted d-block small text-uppercase fw-bold">Total</small>
                     <span class="fs-5 fw-bold text-dark"><?= $cnt_all ?></span>
                 </div>
             </div>
         </div>
 
         <!-- Alert toast container -->
-        <div id="toastContainer" class="position-fixed top-0 end-0 p-3" style="z-index:9999"></div>
+        <div id="toastContainer" class="position-fixed top-0 end-0 p-3 z-3"></div>
 
         <!-- Status Filter Tabs -->
         <div class="mb-4">
-            <div class="d-flex flex-wrap gap-2 p-1 bg-white shadow-sm rounded-4 border d-inline-flex">
+            <div class="d-flex flex-wrap gap-2 p-1 bg-white shadow-sm rounded-3 border d-inline-flex">
                 <?php
                 $tabs = [
                     ['status' => 'all',     'label' => 'Semua',   'icon' => 'bi-grid-fill',      'count' => $cnt_all,     'color' => 'primary'],
@@ -146,13 +145,13 @@ $orders = mysqli_query($conn, "
                 ];
                 foreach ($tabs as $tab):
                     $active = $filter_status === $tab['status'] ? 'active' : '';
-                    $btn_class = $active ? "bg-{$tab['color']} text-white shadow" : "text-muted hover-bg-light";
+                    $btn_class = $active ? "bg-{$tab['color']} text-white shadow" : "text-muted";
                 ?>
                 <a href="?p=admin_order_list&status=<?= $tab['status'] ?>&q=<?= urlencode($q) ?>"
-                   class="nav-filter-btn px-4 py-2 rounded-3 text-decoration-none fw-semibold d-flex align-items-center gap-2 <?= $btn_class ?>">
+                   class="px-4 py-2 rounded-3 text-decoration-none fw-semibold d-flex align-items-center gap-2 small <?= $btn_class ?>">
                     <i class="bi <?= $tab['icon'] ?>"></i>
                     <span><?= $tab['label'] ?></span>
-                    <span class="badge rounded-pill <?= $active ? 'bg-white text-dark' : 'bg-light text-muted border' ?>" style="font-size: 0.7rem;">
+                    <span class="badge rounded-pill <?= $active ? 'bg-white text-dark' : 'bg-light text-muted border' ?> small">
                         <?= $tab['count'] ?>
                     </span>
                 </a>
@@ -161,7 +160,7 @@ $orders = mysqli_query($conn, "
         </div>
 
         <!-- Orders Table -->
-        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
             <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
                 <h5 class="mb-0 fw-bold text-dark">
                     <i class="bi bi-list-task me-2 text-primary"></i>
@@ -180,16 +179,16 @@ $orders = mysqli_query($conn, "
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0 custom-table">
+                    <table class="table table-hover align-middle mb-0">
                         <thead class="bg-light">
                             <tr>
-                                <th class="ps-4 py-3">#Order</th>
-                                <th class="py-3">Customer</th>
-                                <th class="py-3">Event & Tiket</th>
-                                <th class="py-3 text-center">Status</th>
-                                <th class="py-3 text-end">Total</th>
-                                <th class="py-3 text-center">Tanggal</th>
-                                <th class="py-3 text-center pe-4">Aksi</th>
+                                <th class="ps-4 py-3 small text-uppercase fw-bold text-muted">#Order</th>
+                                <th class="py-3 small text-uppercase fw-bold text-muted">Customer</th>
+                                <th class="py-3 small text-uppercase fw-bold text-muted">Event & Tiket</th>
+                                <th class="py-3 text-center small text-uppercase fw-bold text-muted">Status</th>
+                                <th class="py-3 text-end small text-uppercase fw-bold text-muted">Total</th>
+                                <th class="py-3 text-center small text-uppercase fw-bold text-muted">Tanggal</th>
+                                <th class="py-3 text-center pe-4 small text-uppercase fw-bold text-muted">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -215,36 +214,36 @@ $orders = mysqli_query($conn, "
                             ];
                             $st = $status_info[$row['status']];
                         ?>
-                        <tr class="order-row">
+                        <tr>
                             <td class="ps-4">
                                 <span class="fw-bold text-dark">#<?= $row['id_order'] ?></span>
                             </td>
                             <td>
                                 <div class="d-flex align-items-center gap-3">
-                                    <div class="avatar-circle shadow-sm fw-bold" style="background: linear-gradient(135deg, #6366f1, #4f46e5);">
+                                    <div class="bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center fw-bold flex-shrink-0 p-3 ratio ratio-1x1 w-auto min-vw-5">
                                         <?= strtoupper(substr($row['nama'], 0, 1)) ?>
                                     </div>
                                     <div>
                                         <div class="fw-bold text-dark small mb-0"><?= htmlspecialchars($row['nama']) ?></div>
-                                        <div class="text-muted" style="font-size:0.75rem"><?= htmlspecialchars($row['email']) ?></div>
+                                        <div class="text-muted small"><?= htmlspecialchars($row['email']) ?></div>
                                     </div>
                                 </div>
                             </td>
                             <td>
                                 <div class="text-dark fw-medium small mb-1"><?= htmlspecialchars($row['events'] ?? '-') ?></div>
                                 <div class="d-flex gap-2 align-items-center">
-                                    <span class="badge bg-light text-muted border px-2 py-1" style="font-size: 0.65rem; font-weight: 600;">
+                                    <span class="badge bg-light text-muted border px-2 py-1 small">
                                         <i class="bi bi-ticket-perforated-fill me-1"></i><?= $row['total_qty'] ?? 0 ?> Qty
                                     </span>
                                     <?php if ($row['kode_voucher']): ?>
-                                        <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-2 py-1" style="font-size: 0.65rem; font-weight: 600;">
+                                        <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-2 py-1 small">
                                             <i class="bi bi-tag-fill me-1"></i><?= $row['kode_voucher'] ?>
                                         </span>
                                     <?php endif; ?>
                                 </div>
                             </td>
                             <td class="text-center">
-                                <span class="badge bg-<?= $st['bg'] ?> bg-opacity-10 text-<?= $st['bg'] ?> border border-<?= $st['bg'] ?> border-opacity-25 px-3 py-2 rounded-pill d-inline-flex align-items-center gap-2 fw-semibold" style="font-size: 0.75rem;">
+                                <span class="badge bg-<?= $st['bg'] ?> bg-opacity-10 text-<?= $st['bg'] ?> border border-<?= $st['bg'] ?> border-opacity-25 px-3 py-2 rounded-pill d-inline-flex align-items-center gap-2 fw-semibold small">
                                     <i class="<?= $st['icon'] ?> fs-6"></i>
                                     <?= ucfirst($row['status']) ?>
                                 </span>
@@ -254,27 +253,27 @@ $orders = mysqli_query($conn, "
                             </td>
                             <td class="text-center">
                                 <div class="fw-medium text-dark small"><?= date('d M Y', strtotime($row['tanggal_order'])) ?></div>
-                                <div class="text-muted" style="font-size: 0.7rem;"><?= date('H:i', strtotime($row['tanggal_order'])) ?> WIB</div>
+                                <div class="text-muted small"><?= date('H:i', strtotime($row['tanggal_order'])) ?> WIB</div>
                             </td>
                             <td class="text-center pe-4">
                                 <div class="d-flex gap-2 justify-content-center">
                                     <a href="?p=admin_order_detail&id=<?= $row['id_order'] ?>"
-                                       class="btn btn-icon btn-light border" title="Lihat Detail">
+                                       class="btn btn-sm btn-light border" title="Lihat Detail">
                                         <i class="bi bi-eye text-primary"></i>
                                     </a>
                                     <?php if ($row['status'] === 'pending'): ?>
-                                    <button class="btn btn-icon btn-success shadow-sm btn-verify"
+                                    <button class="btn btn-sm btn-success shadow-sm"
                                             onclick="updateStatus(<?= $row['id_order'] ?>, 'paid', this)"
                                             title="Konfirmasi Paid">
                                         <i class="bi bi-check-lg"></i>
                                     </button>
-                                    <button class="btn btn-icon btn-danger shadow-sm"
+                                    <button class="btn btn-sm btn-danger shadow-sm"
                                             onclick="updateStatus(<?= $row['id_order'] ?>, 'cancel', this)"
                                             title="Batalkan Order">
                                         <i class="bi bi-x-lg"></i>
                                     </button>
                                     <?php elseif ($row['status'] === 'paid'): ?>
-                                    <div class="btn btn-icon btn-outline-secondary disabled border-dashed" title="Order Terkunci">
+                                    <div class="btn btn-sm btn-outline-secondary disabled" title="Order Terkunci">
                                         <i class="bi bi-lock-fill"></i>
                                     </div>
                                     <?php elseif ($row['status'] === 'cancel'): ?>
@@ -317,71 +316,6 @@ $orders = mysqli_query($conn, "
 
     </main>
 </div></div>
-
-<style>
-    .search-box input:focus {
-        box-shadow: 0 0 0 0.25rem rgba(79, 70, 229, 0.15) !important;
-        background: #fff !important;
-    }
-    .nav-filter-btn {
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        font-size: 0.85rem;
-    }
-    .nav-filter-btn:not(.active):hover {
-        background-color: #f8fafc;
-        transform: translateY(-1px);
-    }
-    .custom-table thead th {
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        font-weight: 700;
-        color: #64748b;
-    }
-    .order-row {
-        transition: background-color 0.2s ease;
-    }
-    .order-row:hover {
-        background-color: #fcfdfe !important;
-    }
-    .avatar-circle {
-        width: 38px; height: 38px; border-radius: 12px;
-        display: inline-flex; align-items: center; justify-content: center;
-        color: #fff; font-size: 0.9rem; flex-shrink: 0;
-    }
-    .btn-icon {
-        width: 34px; height: 34px; padding: 0;
-        display: inline-flex; align-items: center; justify-content: center;
-        border-radius: 10px; transition: all 0.2s;
-    }
-    .btn-icon:hover {
-        transform: scale(1.1);
-    }
-    .btn-verify { animation: pulse-green 2.5s infinite; }
-    @keyframes pulse-green {
-        0%, 100% { box-shadow: 0 0 0 0 rgba(25,135,84, 0.4); }
-        50% { box-shadow: 0 0 0 6px rgba(25,135,84, 0); }
-    }
-    .pagination .page-link {
-        color: #475569;
-        font-weight: 600;
-    }
-    .pagination .active .page-link {
-        background-color: #4f46e5;
-        color: #fff;
-    }
-    .btn-clear-search {
-        transition: color 0.2s;
-        opacity: 0.5;
-    }
-    .btn-clear-search:hover {
-        color: #ef4444 !important;
-        opacity: 1;
-    }
-    .border-dashed {
-        border-style: dashed !important;
-    }
-</style>
 
 <script>
 function updateStatus(id_order, new_status, btn) {

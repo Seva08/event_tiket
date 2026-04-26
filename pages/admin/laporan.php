@@ -117,7 +117,7 @@ if (!$data_laporan) die("Error Detail: " . mysqli_error($conn));
             <div class="row g-3 mb-4">
                 <div class="col-md-3">
                     <div class="card border-0 shadow-sm rounded-4 h-100 bg-primary text-white overflow-hidden position-relative">
-                        <div class="card-body p-4 position-relative" style="z-index: 2;">
+                        <div class="card-body p-4 position-relative z-1">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <span class="badge bg-white bg-opacity-25 rounded-pill px-3">Revenue</span>
                                 <i class="bi bi-cash-stack fs-4 opacity-75"></i>
@@ -125,12 +125,12 @@ if (!$data_laporan) die("Error Detail: " . mysqli_error($conn));
                             <h3 class="fw-bold mb-1">Rp <?= number_format($stats['total_omzet'] ?? 0, 0, ',', '.') ?></h3>
                             <p class="mb-0 small opacity-75">Total pendapatan (Lunas)</p>
                         </div>
-                        <i class="bi bi-cash-stack position-absolute end-0 bottom-0 mb-n3 me-n3 opacity-25" style="font-size: 8rem; z-index: 1;"></i>
+                        <i class="bi bi-cash-stack position-absolute end-0 bottom-0 opacity-25 z-0 display-1"></i>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="card border-0 shadow-sm rounded-4 h-100 bg-info text-white overflow-hidden position-relative">
-                        <div class="card-body p-4 position-relative" style="z-index: 2;">
+                        <div class="card-body p-4 position-relative z-1">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <span class="badge bg-white bg-opacity-25 rounded-pill px-3">Sold</span>
                                 <i class="bi bi-ticket-perforated fs-4 opacity-75"></i>
@@ -138,12 +138,12 @@ if (!$data_laporan) die("Error Detail: " . mysqli_error($conn));
                             <h3 class="fw-bold mb-1"><?= number_format($stats['total_terjual'] ?? 0, 0, ',', '.') ?></h3>
                             <p class="mb-0 small opacity-75">Tiket telah terjual</p>
                         </div>
-                        <i class="bi bi-ticket-perforated position-absolute end-0 bottom-0 mb-n3 me-n3 opacity-25" style="font-size: 8rem; z-index: 1;"></i>
+                        <i class="bi bi-ticket-perforated position-absolute end-0 bottom-0 opacity-25 z-0 display-1"></i>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="card border-0 shadow-sm rounded-4 h-100 bg-success text-white overflow-hidden position-relative">
-                        <div class="card-body p-4 position-relative" style="z-index: 2;">
+                        <div class="card-body p-4 position-relative z-1">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <span class="badge bg-white bg-opacity-25 rounded-pill px-3">Check-in</span>
                                 <i class="bi bi-person-check fs-4 opacity-75"></i>
@@ -151,12 +151,12 @@ if (!$data_laporan) die("Error Detail: " . mysqli_error($conn));
                             <h3 class="fw-bold mb-1"><?= number_format($stats['total_checkin'] ?? 0, 0, ',', '.') ?></h3>
                             <p class="mb-0 small opacity-75">Pengunjung telah hadir</p>
                         </div>
-                        <i class="bi bi-person-check position-absolute end-0 bottom-0 mb-n3 me-n3 opacity-25" style="font-size: 8rem; z-index: 1;"></i>
+                        <i class="bi bi-person-check position-absolute end-0 bottom-0 opacity-25 z-0 display-1"></i>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="card border-0 shadow-sm rounded-4 h-100 bg-dark text-white overflow-hidden position-relative">
-                        <div class="card-body p-4 position-relative" style="z-index: 2;">
+                        <div class="card-body p-4 position-relative z-1">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <span class="badge bg-white bg-opacity-25 rounded-pill px-3">Transactions</span>
                                 <i class="bi bi-bag-check fs-4 opacity-75"></i>
@@ -164,7 +164,7 @@ if (!$data_laporan) die("Error Detail: " . mysqli_error($conn));
                             <h3 class="fw-bold mb-1"><?= number_format($stats['total_pesanan'] ?? 0, 0, ',', '.') ?></h3>
                             <p class="mb-0 small opacity-75">Total pesanan sukses</p>
                         </div>
-                        <i class="bi bi-bag-check position-absolute end-0 bottom-0 mb-n3 me-n3 opacity-25" style="font-size: 8rem; z-index: 1;"></i>
+                        <i class="bi bi-bag-check position-absolute end-0 bottom-0 opacity-25 z-0 display-1"></i>
                     </div>
                 </div>
             </div>
@@ -251,10 +251,10 @@ if (!$data_laporan) die("Error Detail: " . mysqli_error($conn));
                                 <tr>
                                     <td class="ps-4 text-muted fw-bold"><?= $no++ ?></td>
                                     <td>
-                                        <div class="font-monospace text-primary fw-bold" style="font-size: 0.85rem; letter-spacing: 1px;">
+                                        <div class="font-monospace text-primary fw-bold small">
                                             <?= $row['kode_tiket'] ?>
                                         </div>
-                                        <div class="text-muted" style="font-size: 0.7rem;">#ORDER-<?= $row['id_order'] ?></div>
+                                        <div class="text-muted small">#ORDER-<?= $row['id_order'] ?></div>
                                     </td>
                                     <td>
                                         <div class="fw-bold text-dark"><?= htmlspecialchars($row['nama']) ?></div>
@@ -262,11 +262,11 @@ if (!$data_laporan) die("Error Detail: " . mysqli_error($conn));
                                     </td>
                                     <td>
                                         <div class="fw-semibold text-dark mb-1"><?= htmlspecialchars($row['nama_event']) ?></div>
-                                        <span class="badge bg-secondary bg-opacity-10 text-secondary border-0" style="font-size: 0.7rem;"><?= htmlspecialchars($row['nama_tiket']) ?></span>
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary border-0 small"><?= htmlspecialchars($row['nama_tiket']) ?></span>
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <div class="rounded-circle bg-<?= $pay_badge ?> me-2" style="width: 8px; height: 8px;"></div>
+                                            <span class="rounded-circle bg-<?= $pay_badge ?> me-2 d-inline-block p-1"></span>
                                             <span class="fw-bold text-<?= $pay_badge ?> small">
                                                 <?= strtoupper($row['order_status']) ?>
                                             </span>
@@ -287,7 +287,7 @@ if (!$data_laporan) die("Error Detail: " . mysqli_error($conn));
                                     </td>
                                     <td class="pe-4 text-end">
                                         <div class="small fw-bold text-dark"><?= date('d M Y', strtotime($row['tanggal_order'])) ?></div>
-                                        <div class="text-muted" style="font-size: 0.75rem;"><?= date('H:i', strtotime($row['tanggal_order'])) ?> WIB</div>
+                                        <div class="text-muted small"><?= date('H:i', strtotime($row['tanggal_order'])) ?> WIB</div>
                                     </td>
                                 </tr>
                                 <?php endwhile; ?>
@@ -331,21 +331,7 @@ if (!$data_laporan) die("Error Detail: " . mysqli_error($conn));
     </div>
 </div>
 
-<style>
-.table-hover tbody tr:hover { background-color: #f8fafc; }
-.page-link { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: #f1f5f9; color: #64748b; font-weight: bold; }
-.page-item.active .page-link { background-color: #0d6efd; color: white; }
-.form-select, .form-control { transition: all 0.2s; }
-.form-select:focus, .form-control:focus { background-color: #fff !important; box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1) !important; }
 
-@media print {
-    .sidebar, .navbar, .d-print-none, .btn, .card-footer { display: none !important; }
-    .col-md-10 { width: 100% !important; margin: 0 !important; padding: 0 !important; flex: 0 0 100%; max-width: 100%; }
-    .card { border: none !important; box-shadow: none !important; }
-    body { background: white !important; }
-    .card-body { padding: 0 !important; }
-}
-</style>
 
 <script>
 // Pencarian otomatis saat dropdown berubah

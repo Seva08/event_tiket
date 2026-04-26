@@ -44,7 +44,7 @@ if (isset($_POST['update'])) {
 
             <div class="row justify-content-center">
                 <div class="col-lg-7">
-                    <div class="card border-0 shadow-sm" style="border-radius: 24px;">
+                    <div class="card border-0 shadow-sm rounded-4">
                         <div class="card-body p-4 p-md-5">
                             <form method="POST">
                                 <div class="mb-4 text-center">
@@ -59,7 +59,7 @@ if (isset($_POST['update'])) {
                                     <label class="form-label fw-bold small text-uppercase opacity-75">Kode Voucher</label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-light border-0"><i class="bi bi-hash"></i></span>
-                                        <input type="text" name="kode_voucher" class="form-control form-control-lg border-0 bg-light fw-bold text-uppercase" value="<?= htmlspecialchars($data['kode_voucher']) ?>" required style="border-radius: 0 12px 12px 0; letter-spacing: 1px;">
+                                        <input type="text" name="kode_voucher" class="form-control form-control-lg border-0 bg-light fw-bold text-uppercase" value="<?= htmlspecialchars($data['kode_voucher']) ?>" required>
                                     </div>
                                 </div>
 
@@ -68,28 +68,28 @@ if (isset($_POST['update'])) {
                                         <label class="form-label fw-bold small text-uppercase opacity-75">Potongan Harga</label>
                                         <div class="input-group">
                                             <span class="input-group-text bg-light border-0">Rp</span>
-                                            <input type="number" name="potongan" class="form-control form-control-lg border-0 bg-light" value="<?= $data['potongan'] ?>" required style="border-radius: 0 12px 12px 0;">
+                                            <input type="number" name="potongan" class="form-control form-control-lg border-0 bg-light" value="<?= $data['potongan'] ?>" required>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label fw-bold small text-uppercase opacity-75">Kuota Penggunaan</label>
                                         <div class="input-group">
                                             <span class="input-group-text bg-light border-0"><i class="bi bi-people"></i></span>
-                                            <input type="number" name="kuota" class="form-control form-control-lg border-0 bg-light" value="<?= $data['kuota'] ?>" required style="border-radius: 0 12px 12px 0;">
+                                            <input type="number" name="kuota" class="form-control form-control-lg border-0 bg-light" value="<?= $data['kuota'] ?>" required>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="mb-5">
                                     <label class="form-label fw-bold small text-uppercase opacity-75">Status Voucher</label>
-                                    <select name="status" class="form-select form-select-lg border-0 bg-light" required style="border-radius: 12px;">
+                                    <select name="status" class="form-select form-select-lg border-0 bg-light rounded-3" required>
                                         <option value="aktif" <?= $data['status'] == 'aktif' ? 'selected' : '' ?>>Aktif</option>
                                         <option value="nonaktif" <?= $data['status'] == 'nonaktif' ? 'selected' : '' ?>>Nonaktif</option>
                                     </select>
                                 </div>
 
                                 <div class="d-grid pt-2">
-                                    <button type="submit" name="update" class="btn btn-warning btn-lg fw-bold shadow-sm" style="border-radius: 50px; padding: 16px;">
+                                    <button type="submit" name="update" class="btn btn-warning btn-lg fw-bold shadow-sm p-3 rounded-pill">
                                         <i class="bi bi-save-fill me-2"></i> Simpan Perubahan
                                     </button>
                                 </div>

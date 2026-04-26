@@ -37,7 +37,7 @@ if (isset($_POST['simpan'])) {
 
             <div class="row justify-content-center">
                 <div class="col-lg-7">
-                    <div class="card border-0 shadow-sm" style="border-radius: 24px;">
+                    <div class="card border-0 shadow-sm rounded-4">
                         <div class="card-body p-4 p-md-5">
                             <form method="POST">
                                 <div class="mb-4 text-center">
@@ -52,7 +52,7 @@ if (isset($_POST['simpan'])) {
                                     <label class="form-label fw-bold small text-uppercase opacity-75">Nama Venue</label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-light border-0"><i class="bi bi-building"></i></span>
-                                        <input type="text" name="nama_venue" class="form-control form-control-lg border-0 bg-light" placeholder="Contoh: Gelora Bung Karno" required style="border-radius: 0 12px 12px 0;">
+                                        <input type="text" name="nama_venue" class="form-control form-control-lg border-0 bg-light" placeholder="Contoh: Gelora Bung Karno" required>
                                     </div>
                                 </div>
 
@@ -60,7 +60,7 @@ if (isset($_POST['simpan'])) {
                                     <label class="form-label fw-bold small text-uppercase opacity-75">Alamat Lengkap</label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-light border-0"><i class="bi bi-map"></i></span>
-                                        <textarea name="alamat" class="form-control form-control-lg border-0 bg-light" rows="3" placeholder="Masukkan alamat lengkap..." required style="border-radius: 0 12px 12px 0;"></textarea>
+                                        <textarea name="alamat" class="form-control form-control-lg border-0 bg-light" rows="3" placeholder="Masukkan alamat lengkap..." required></textarea>
                                     </div>
                                 </div>
 
@@ -68,14 +68,14 @@ if (isset($_POST['simpan'])) {
                                     <label class="form-label fw-bold small text-uppercase opacity-75">Kapasitas Maksimal</label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-light border-0"><i class="bi bi-people"></i></span>
-                                        <input type="number" name="kapasitas" class="form-control form-control-lg border-0 bg-light" placeholder="Contoh: 50000" required style="border-radius: 0 12px 12px 0;">
+                                        <input type="number" name="kapasitas" class="form-control form-control-lg border-0 bg-light" placeholder="Contoh: 50000" required>
                                         <span class="input-group-text bg-light border-0">Orang</span>
                                     </div>
                                     <div class="form-text mt-2"><i class="bi bi-info-circle me-1"></i>Kapasitas akan menjadi batas maksimal total tiket yang bisa dijual.</div>
                                 </div>
 
                                 <div class="d-grid pt-2">
-                                    <button type="submit" name="simpan" class="btn btn-success btn-lg fw-bold shadow-sm" style="border-radius: 50px; padding: 16px;">
+                                    <button type="submit" name="simpan" class="btn btn-success btn-lg fw-bold shadow-sm p-3 rounded-pill">
                                         <i class="bi bi-check-circle-fill me-2"></i> Daftarkan Venue
                                     </button>
                                 </div>

@@ -83,8 +83,8 @@ $status_badge = $order['status']=='paid' ? 'success' : ($order['status']=='pendi
         <?php while ($a = mysqli_fetch_assoc($attendees)): ?>
         <div class="col-6">
             <div class="p-2 border rounded bg-white text-center">
-                <small class="text-muted d-block" style="font-size: 0.65rem;">Kode Tiket</small>
-                <div class="fw-bold small text-primary" style="letter-spacing: 1px;"><?= $a['kode_tiket'] ?></div>
+                <small class="text-muted d-block small">Kode Tiket</small>
+                <div class="fw-bold small text-primary tracking-wide"><?= $a['kode_tiket'] ?></div>
             </div>
         </div>
         <?php endwhile; ?>

@@ -58,7 +58,7 @@ while($ev = mysqli_fetch_assoc($event_list_q = $events)) $event_list[] = $ev;
 
             <div class="row justify-content-center">
                 <div class="col-lg-7">
-                    <div class="card border-0 shadow-sm" style="border-radius: 24px;">
+                    <div class="card border-0 shadow-sm rounded-4">
                         <div class="card-body p-4 p-md-5">
                             <form method="POST" id="formTiket">
                                 <div class="mb-4 text-center">
@@ -73,7 +73,7 @@ while($ev = mysqli_fetch_assoc($event_list_q = $events)) $event_list[] = $ev;
                                     <label class="form-label fw-bold small text-uppercase opacity-75">Pilih Event</label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-light border-0"><i class="bi bi-calendar-event"></i></span>
-                                        <select name="id_event" id="selectEvent" class="form-select form-select-lg border-0 bg-light" required style="border-radius: 0 12px 12px 0;">
+                                        <select name="id_event" id="selectEvent" class="form-select form-select-lg border-0 bg-light" required>
                                             <option value="">-- Pilih Event --</option>
                                             <?php
                                             $q_ev = mysqli_query($conn, "SELECT e.id_event, e.nama_event FROM event e ORDER BY e.tanggal DESC");
@@ -87,7 +87,7 @@ while($ev = mysqli_fetch_assoc($event_list_q = $events)) $event_list[] = $ev;
                                     <label class="form-label fw-bold small text-uppercase opacity-75">Nama Kategori Tiket</label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-light border-0"><i class="bi bi-tag"></i></span>
-                                        <input type="text" name="nama_tiket" class="form-control form-control-lg border-0 bg-light" placeholder="Contoh: VIP, Reguler, Early Bird" required style="border-radius: 0 12px 12px 0;">
+                                        <input type="text" name="nama_tiket" class="form-control form-control-lg border-0 bg-light" placeholder="Contoh: VIP, Reguler, Early Bird" required>
                                     </div>
                                 </div>
 
@@ -96,20 +96,20 @@ while($ev = mysqli_fetch_assoc($event_list_q = $events)) $event_list[] = $ev;
                                         <label class="form-label fw-bold small text-uppercase opacity-75">Harga Tiket</label>
                                         <div class="input-group">
                                             <span class="input-group-text bg-light border-0">Rp</span>
-                                            <input type="number" name="harga" class="form-control form-control-lg border-0 bg-light" placeholder="0" required style="border-radius: 0 12px 12px 0;">
+                                            <input type="number" name="harga" class="form-control form-control-lg border-0 bg-light" placeholder="0" required>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label fw-bold small text-uppercase opacity-75">Kuota (Jumlah)</label>
                                         <div class="input-group">
                                             <span class="input-group-text bg-light border-0"><i class="bi bi-people"></i></span>
-                                            <input type="number" name="kuota" id="inputKuota" class="form-control form-control-lg border-0 bg-light" placeholder="0" required style="border-radius: 0 12px 12px 0;">
+                                            <input type="number" name="kuota" id="inputKuota" class="form-control form-control-lg border-0 bg-light" placeholder="0" required>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="d-grid pt-2">
-                                    <button type="submit" name="simpan" class="btn btn-info text-white btn-lg fw-bold shadow-sm" style="border-radius: 50px; padding: 16px;">
+                                    <button type="submit" name="simpan" class="btn btn-info text-white btn-lg fw-bold shadow-sm p-3 rounded-pill">
                                         <i class="bi bi-check-circle-fill me-2"></i> Terbitkan Tiket
                                     </button>
                                 </div>

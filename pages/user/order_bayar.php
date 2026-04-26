@@ -87,11 +87,11 @@ if (isset($_POST['aksi'])) {
 
     <div class="row justify-content-center">
         <div class="col-lg-6">
-            <div class="card" style="border:none; border-radius:var(--r-lg); box-shadow:0 4px 20px rgba(0,0,0,0.05); overflow:hidden;">
-                <div style="background:var(--g-primary); padding:1.5rem; color:white; text-align:center;">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="bg-primary p-4 text-white text-center">
                     <i class="bi bi-wallet2 fs-1 mb-2"></i>
                     <h4 class="fw-bold mb-0">Pembayaran Pesanan</h4>
-                    <p class="mb-0" style="font-size:0.9rem; opacity:0.9;">#<?= $order['id_order'] ?></p>
+                    <p class="mb-0 small opacity-75">#<?= $order['id_order'] ?></p>
                 </div>
                 <div class="card-body p-4 bg-light">
                     <div class="text-center mb-4">
@@ -99,17 +99,17 @@ if (isset($_POST['aksi'])) {
                         <h2 class="fw-bold text-dark">Rp <?= number_format($order['total'], 0, ',', '.') ?></h2>
                     </div>
 
-                    <div class="alert alert-info" style="border-radius: var(--r-md);">
+                    <div class="alert alert-info rounded-3">
                         <i class="bi bi-info-circle-fill me-2"></i>Silakan transfer ke rekening berikut:<br>
                         <strong>BCA: 1234567890 a.n YuiPass</strong>
                     </div>
 
                     <form method="POST" action="">
                         <div class="d-grid gap-3">
-                            <button type="submit" name="aksi" value="bayar" class="btn btn-success py-3 fw-bold" style="border-radius:50px; font-size:1.1rem; box-shadow:0 8px 15px rgba(25,135,84,0.3);">
+                            <button type="submit" name="aksi" value="bayar" class="btn btn-success py-3 fw-bold rounded-pill shadow-sm fs-5">
                                 <i class="bi bi-check-circle me-2"></i>Bayar Sekarang
                             </button>
-                            <button type="submit" name="aksi" value="cancel" class="btn btn-outline-danger py-2 fw-bold" style="border-radius:50px;" onclick="return confirm('Yakin ingin membatalkan pesanan ini? Kuota tiket akan dikembalikan ke sistem.');">
+                            <button type="submit" name="aksi" value="cancel" class="btn btn-outline-danger py-2 fw-bold rounded-pill" onclick="return confirm('Yakin ingin membatalkan pesanan ini? Kuota tiket akan dikembalikan ke sistem.');">
                                 <i class="bi bi-x-circle me-2"></i>Batalkan Pesanan
                             </button>
                         </div>

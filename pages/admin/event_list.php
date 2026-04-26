@@ -73,7 +73,7 @@ $query       = mysqli_query($conn, "SELECT e.*, v.nama_venue FROM event e JOIN v
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 <?php if($row['gambar']): ?>
-                                                    <img src="uploads/<?= $row['gambar'] ?>" alt="" class="rounded me-3" style="width: 45px; height: 45px; object-fit: cover;">
+                                                    <img src="uploads/<?= $row['gambar'] ?>" alt="" class="rounded me-3 object-fit-cover" width="45" height="45">
                                                 <?php else: ?>
                                                     <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
                                                         <i class="bi bi-calendar-event text-primary"></i>

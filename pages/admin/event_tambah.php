@@ -77,7 +77,7 @@ $json_events = json_encode($all_events);
 
             <div class="row justify-content-center">
                 <div class="col-lg-8">
-                    <div class="card border-0 shadow-sm" style="border-radius: 24px;">
+                    <div class="card border-0 shadow-sm rounded-4">
                         <div class="card-body p-4 p-md-5">
                             <form method="POST" enctype="multipart/form-data" id="formEvent">
                                 <div class="mb-4 text-center">
@@ -92,7 +92,7 @@ $json_events = json_encode($all_events);
                                     <label class="form-label fw-bold small text-uppercase opacity-75">Nama Event</label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-light border-0"><i class="bi bi-pencil-square"></i></span>
-                                        <input type="text" name="nama_event" class="form-control form-control-lg border-0 bg-light" placeholder="Masukkan nama event..." required style="border-radius: 0 12px 12px 0;">
+                                        <input type="text" name="nama_event" class="form-control form-control-lg border-0 bg-light" placeholder="Masukkan nama event..." required>
                                     </div>
                                 </div>
 
@@ -101,14 +101,14 @@ $json_events = json_encode($all_events);
                                         <label class="form-label fw-bold small text-uppercase opacity-75">Tanggal Event</label>
                                         <div class="input-group">
                                             <span class="input-group-text bg-light border-0"><i class="bi bi-calendar3"></i></span>
-                                            <input type="date" name="tanggal" id="inputTanggal" class="form-control form-control-lg border-0 bg-light" required style="border-radius: 0 12px 12px 0;">
+                                            <input type="date" name="tanggal" id="inputTanggal" class="form-control form-control-lg border-0 bg-light" required>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label fw-bold small text-uppercase opacity-75">Lokasi Venue</label>
                                         <div class="input-group">
                                             <span class="input-group-text bg-light border-0"><i class="bi bi-geo-alt"></i></span>
-                                            <select name="id_venue" id="selectVenue" class="form-select form-select-lg border-0 bg-light" required style="border-radius: 0 12px 12px 0;">
+                                            <select name="id_venue" id="selectVenue" class="form-select form-select-lg border-0 bg-light" required>
                                                 <option value="">-- Pilih Venue --</option>
                                                 <?php
                                                 $q_venue = mysqli_query($conn, "SELECT * FROM venue ORDER BY nama_venue ASC");
@@ -123,22 +123,22 @@ $json_events = json_encode($all_events);
                                     <label class="form-label fw-bold small text-uppercase opacity-75">Limit Tiket Per User</label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-light border-0"><i class="bi bi-shield-lock"></i></span>
-                                        <input type="number" name="limit_tiket" class="form-control form-control-lg border-0 bg-light" value="5" min="1" required style="border-radius: 0 12px 12px 0;">
+                                        <input type="number" name="limit_tiket" class="form-control form-control-lg border-0 bg-light" value="5" min="1" required>
                                     </div>
                                     <div class="form-text mt-2"><i class="bi bi-info-circle me-1"></i>Berapa maksimal tiket yang bisa dibeli oleh satu akun untuk event ini?</div>
                                 </div>
 
                                 <div class="mb-5">
                                     <label class="form-label fw-bold small text-uppercase opacity-75">Banner Event</label>
-                                    <div class="p-4 border-2 border-dashed rounded-4 text-center bg-light position-relative" style="border-style: dashed !important; border-color: #cbd5e1 !important;">
+                                    <div class="p-4 border border-2 rounded-4 text-center bg-light position-relative">
                                         <i class="bi bi-cloud-upload text-muted display-6 mb-2 d-block"></i>
                                         <p class="small text-muted mb-3">Klik atau drag gambar banner ke sini (16:9 disarankan)</p>
-                                        <input type="file" name="gambar" class="form-control border-0 bg-white shadow-sm" accept="image/*" style="border-radius: 10px;">
+                                        <input type="file" name="gambar" class="form-control border-0 bg-white shadow-sm rounded-3" accept="image/*">
                                     </div>
                                 </div>
 
                                 <div class="d-grid pt-2">
-                                    <button type="submit" name="simpan" class="btn btn-primary btn-lg fw-bold shadow-sm" style="border-radius: 50px; padding: 16px;">
+                                    <button type="submit" name="simpan" class="btn btn-primary btn-lg fw-bold shadow-sm p-3 rounded-pill">
                                         <i class="bi bi-check-circle-fill me-2"></i> Publikasikan Event
                                     </button>
                                 </div>

@@ -131,11 +131,11 @@ $status_badge = $order['status']=='paid' ? 'success' : ($order['status']=='pendi
                         </div>
                     </div>
                     <?php elseif ($order['status'] === 'paid'): ?>
-                        <div class="alert alert-success border-0 small mb-0" style="background:rgba(25,135,84,0.1); color:#157347;">
+                        <div class="alert alert-success border-0 small mb-0 bg-success bg-opacity-10 text-success">
                             <i class="bi bi-shield-check me-1"></i> Order ini sudah selesai (PAID) dan tidak dapat dibatalkan melalui sistem ini.
                         </div>
                     <?php elseif ($order['status'] === 'cancel'): ?>
-                        <div class="alert alert-danger border-0 small mb-0" style="background:rgba(220,53,69,0.1); color:#b02a37;">
+                        <div class="alert alert-danger border-0 small mb-0 bg-danger bg-opacity-10 text-danger">
                             <i class="bi bi-x-circle me-1"></i> Order ini telah dibatalkan (CANCEL) dan tidak dapat diaktifkan kembali.
                         </div>
                     <?php endif; ?>

@@ -59,7 +59,7 @@ if (isset($_POST['update'])) {
 
             <div class="row justify-content-center">
                 <div class="col-lg-7">
-                    <div class="card border-0 shadow-sm" style="border-radius: 24px;">
+                    <div class="card border-0 shadow-sm rounded-4">
                         <div class="card-body p-4 p-md-5">
                             <form method="POST">
                                 <div class="mb-4 text-center">
@@ -74,7 +74,7 @@ if (isset($_POST['update'])) {
                                     <label class="form-label fw-bold small text-uppercase opacity-75">Nama Event</label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-light border-0"><i class="bi bi-calendar-event"></i></span>
-                                        <select name="id_event" class="form-select form-select-lg border-0 bg-light" required style="border-radius: 0 12px 12px 0;">
+                                        <select name="id_event" class="form-select form-select-lg border-0 bg-light" required>
                                             <?php
                                             $q_ev = mysqli_query($conn, "SELECT id_event, nama_event FROM event ORDER BY tanggal DESC");
                                             while($ev = mysqli_fetch_assoc($q_ev)) {
@@ -90,7 +90,7 @@ if (isset($_POST['update'])) {
                                     <label class="form-label fw-bold small text-uppercase opacity-75">Nama Kategori Tiket</label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-light border-0"><i class="bi bi-tag"></i></span>
-                                        <input type="text" name="nama_tiket" class="form-control form-control-lg border-0 bg-light" value="<?= htmlspecialchars($data['nama_tiket']) ?>" required style="border-radius: 0 12px 12px 0;">
+                                        <input type="text" name="nama_tiket" class="form-control form-control-lg border-0 bg-light" value="<?= htmlspecialchars($data['nama_tiket']) ?>" required>
                                     </div>
                                 </div>
 
@@ -99,20 +99,20 @@ if (isset($_POST['update'])) {
                                         <label class="form-label fw-bold small text-uppercase opacity-75">Harga Tiket</label>
                                         <div class="input-group">
                                             <span class="input-group-text bg-light border-0">Rp</span>
-                                            <input type="number" name="harga" class="form-control form-control-lg border-0 bg-light" value="<?= $data['harga'] ?>" required style="border-radius: 0 12px 12px 0;">
+                                            <input type="number" name="harga" class="form-control form-control-lg border-0 bg-light" value="<?= $data['harga'] ?>" required>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label fw-bold small text-uppercase opacity-75">Kuota (Jumlah)</label>
                                         <div class="input-group">
                                             <span class="input-group-text bg-light border-0"><i class="bi bi-people"></i></span>
-                                            <input type="number" name="kuota" class="form-control form-control-lg border-0 bg-light" value="<?= $data['kuota'] ?>" required style="border-radius: 0 12px 12px 0;">
+                                            <input type="number" name="kuota" class="form-control form-control-lg border-0 bg-light" value="<?= $data['kuota'] ?>" required>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="d-grid pt-2">
-                                    <button type="submit" name="update" class="btn btn-warning btn-lg fw-bold shadow-sm" style="border-radius: 50px; padding: 16px;">
+                                    <button type="submit" name="update" class="btn btn-warning btn-lg fw-bold shadow-sm p-3 rounded-pill">
                                         <i class="bi bi-save-fill me-2"></i> Simpan Perubahan
                                     </button>
                                 </div>

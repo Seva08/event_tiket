@@ -65,14 +65,39 @@ $result = isset($_SESSION['last_checkin']) ? $_SESSION['last_checkin'] : null;
 unset($_SESSION['last_checkin']);
 ?>
 <div class="container-fluid"><div class="row">
-    <nav class="col-md-2 d-none d-md-block bg-dark sidebar py-4">
-        <div class="sidebar-sticky">
-            <h5 class="text-white px-3 mb-3"><i class="bi bi-person-badge"></i> Menu Petugas</h5>
-            <ul class="nav flex-column">
-                <li class="nav-item"><a class="nav-link text-white" href="?p=dashboard_petugas"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link text-white active" href="?p=petugas_checkin"><i class="bi bi-qr-code-scan"></i> Scan Check-in</a></li>
-            </ul>
+    <nav class="col-md-2 d-none d-md-block py-2" id="adminSidebar">
+        <div class="px-3 py-3 mb-1">
+            <div class="d-flex align-items-center gap-2">
+                <span class="bg-success text-white rounded-2 d-inline-flex align-items-center justify-content-center p-2">
+                    <i class="bi bi-person-badge-fill small"></i>
+                </span>
+                <div>
+                    <div class="text-light fw-bold small lh-sm">Panel Petugas</div>
+                    <div class="text-secondary small"><?= htmlspecialchars($_SESSION['nama'] ?? '') ?></div>
+                </div>
+            </div>
         </div>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link text-light d-flex align-items-center gap-2 mx-2 rounded-2 <?= (isset($_GET['p']) && $_GET['p'] === 'dashboard_petugas') ? 'active bg-primary' : '' ?>"
+                   href="?p=dashboard_petugas">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-light d-flex align-items-center gap-2 mx-2 rounded-2 <?= (isset($_GET['p']) && $_GET['p'] === 'petugas_checkin') ? 'active bg-primary' : '' ?>"
+                   href="?p=petugas_checkin">
+                    <i class="bi bi-qr-code-scan"></i> Scan Check-in
+                </a>
+            </li>
+            <li><div class="text-secondary fw-bold text-uppercase px-3 pt-3 pb-1 small">AKUN</div></li>
+            <li class="nav-item">
+                <a class="nav-link text-light d-flex align-items-center gap-2 mx-2 rounded-2 text-danger"
+                   href="?p=logout">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </a>
+            </li>
+        </ul>
     </nav>
     <main class="col-md-10 ms-sm-auto px-md-4 py-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -85,9 +110,9 @@ unset($_SESSION['last_checkin']);
 
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-6">
-                <div class="card border-0 shadow" style="border-radius: var(--r-lg, 16px); overflow: hidden;">
-                    <div class="card-header bg-success text-white text-center py-4" style="border: none;">
-                        <div class="bg-white bg-opacity-25 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 70px; height: 70px;">
+                <div class="card border-0 shadow rounded-4 overflow-hidden">
+                    <div class="card-header bg-success text-white text-center py-4 border-0">
+                        <div class="bg-white bg-opacity-25 rounded-circle d-inline-flex align-items-center justify-content-center mb-2 p-3">
                             <i class="bi bi-upc-scan fs-1"></i>
                         </div>
                         <h4 class="mb-0 fw-bold">Proses Check-in</h4>
@@ -100,7 +125,7 @@ unset($_SESSION['last_checkin']);
                                 <i class="bi bi-camera me-2"></i> Buka Kamera Scan
                             </button>
                             <div id="reader-container" class="mt-3 d-none">
-                                <div id="reader" style="width: 100%; max-width: 400px; margin: 0 auto; border-radius: 12px; overflow: hidden; border: 3px solid var(--g-primary);"></div>
+                                <div id="reader" class="mx-auto rounded-3 border border-3 border-primary w-100 col-md-8 col-lg-6"></div>
                                 <button type="button" id="btnStopCamera" class="btn btn-sm btn-danger mt-2 rounded-pill px-3">
                                     <i class="bi bi-x-circle me-1"></i> Tutup Kamera
                                 </button>
@@ -110,10 +135,10 @@ unset($_SESSION['last_checkin']);
                         <form method="POST" class="mt-2" id="checkinForm">
                             <input type="hidden" name="proses_checkin" value="1">
                             <div class="mb-4">
-                                <label class="form-label fw-bold text-muted text-uppercase" style="font-size: 0.85rem; letter-spacing: 0.5px;">Masukkan Kode Tiket</label>
-                                <div class="input-group input-group-lg" style="box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-radius: var(--r-md, 8px); overflow: hidden;">
+                                <label class="form-label fw-bold text-muted text-uppercase small">Masukkan Kode Tiket</label>
+                                <div class="input-group input-group-lg shadow-sm rounded-3 overflow-hidden">
                                     <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-upc-scan"></i></span>
-                                    <input type="text" name="kode_tiket" id="kode_tiket" class="form-control border-start-0 ps-0 fw-bold text-uppercase" placeholder="Contoh: TKT-ABCD1234" required autofocus style="box-shadow: none;">
+                                    <input type="text" name="kode_tiket" id="kode_tiket" class="form-control border-start-0 ps-0 fw-bold text-uppercase" placeholder="Contoh: TKT-ABCD1234" required autofocus>
                                     <button class="btn btn-success fw-bold px-4" type="submit">
                                         <i class="bi bi-check-lg me-1"></i> Check-in
                                     </button>
@@ -123,7 +148,7 @@ unset($_SESSION['last_checkin']);
                         </form>
 
                         <?php if ($result): ?>
-                            <div class="card mt-4 border-0" style="background: #ecfdf5; border-radius: var(--r-md, 8px);">
+                            <div class="card mt-4 border-0 bg-success bg-opacity-10 rounded-3">
                                 <div class="card-body p-4">
                                     <div class="d-flex align-items-center mb-3 pb-3 border-bottom border-success border-opacity-25">
                                         <i class="bi bi-person-check-fill text-success fs-2 me-3"></i>
@@ -135,19 +160,19 @@ unset($_SESSION['last_checkin']);
                                     
                                     <div class="row g-3">
                                         <div class="col-6">
-                                            <small class="text-muted d-block mb-1 text-uppercase" style="font-size:0.75rem;">Nama Pengunjung</small>
+                                            <small class="text-muted d-block mb-1 text-uppercase small">Nama Pengunjung</small>
                                             <div class="fw-bold text-dark"><?= htmlspecialchars($result['nama']) ?></div>
                                         </div>
                                         <div class="col-6">
-                                            <small class="text-muted d-block mb-1 text-uppercase" style="font-size:0.75rem;">Kode Tiket</small>
+                                            <small class="text-muted d-block mb-1 text-uppercase small">Kode Tiket</small>
                                             <div class="fw-bold font-monospace text-primary"><?= $result['kode_tiket'] ?></div>
                                         </div>
                                         <div class="col-12">
-                                            <small class="text-muted d-block mb-1 text-uppercase" style="font-size:0.75rem;">Nama Event</small>
+                                            <small class="text-muted d-block mb-1 text-uppercase small">Nama Event</small>
                                             <div class="fw-bold text-dark"><?= htmlspecialchars($result['nama_event']) ?></div>
                                         </div>
                                         <div class="col-12">
-                                            <small class="text-muted d-block mb-1 text-uppercase" style="font-size:0.75rem;">Tipe Tiket</small>
+                                            <small class="text-muted d-block mb-1 text-uppercase small">Tipe Tiket</small>
                                             <div class="badge bg-success bg-opacity-25 text-success px-3 py-2 fs-6 rounded-pill">
                                                 <?= htmlspecialchars($result['nama_tiket']) ?>
                                             </div>

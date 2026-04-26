@@ -32,10 +32,10 @@ if (!$tiket) {
 }
 
 if ($tiket['status'] !== 'paid') {
-    echo "<div style='text-align:center; padding:50px; font-family:sans-serif;'>
-            <h2 style='color:#f59e0b;'>Tiket Belum Aktif</h2>
+    echo "<div class='text-center p-5 font-sans-serif'>
+            <h2 class='text-warning fw-bold'>Tiket Belum Aktif</h2>
             <p>Selesaikan pembayaran untuk mengaktifkan dan mencetak tiket ini.</p>
-            <a href='?p=riwayat' style='color:#4f46e5; text-decoration:none; font-weight:bold;'>Kembali ke Riwayat</a>
+            <a href='?p=riwayat' class='text-primary text-decoration-none fw-bold'>Kembali ke Riwayat</a>
           </div>";
     exit;
 }
@@ -80,22 +80,22 @@ if ($tiket['status'] !== 'paid') {
         <div class="ticket-body">
             <div class="row mb-4">
                 <div class="col-6">
-                    <small class="text-muted text-uppercase fw-bold" style="font-size:0.75rem;">Nama Pembeli</small>
+                    <small class="text-muted text-uppercase fw-bold small">Nama Pembeli</small>
                     <div class="fw-bold fs-5"><?= htmlspecialchars($tiket['pembeli']) ?></div>
                 </div>
                 <div class="col-6 text-end">
-                    <small class="text-muted text-uppercase fw-bold" style="font-size:0.75rem;">Jenis Tiket</small>
+                    <small class="text-muted text-uppercase fw-bold small">Jenis Tiket</small>
                     <div class="fw-bold fs-5 text-primary"><?= htmlspecialchars($tiket['nama_tiket']) ?></div>
                 </div>
             </div>
 
             <div class="row mb-2">
                 <div class="col-12 mb-3">
-                    <small class="text-muted text-uppercase fw-bold" style="font-size:0.75rem;">Tanggal Event</small>
+                    <small class="text-muted text-uppercase fw-bold small">Tanggal Event</small>
                     <div class="fw-bold fs-5"><i class="bi bi-calendar-event text-danger me-2"></i><?= date('d F Y', strtotime($tiket['tanggal'])) ?></div>
                 </div>
                 <div class="col-12 mb-3">
-                    <small class="text-muted text-uppercase fw-bold" style="font-size:0.75rem;">Lokasi / Venue</small>
+                    <small class="text-muted text-uppercase fw-bold small">Lokasi / Venue</small>
                     <div class="fw-bold"><i class="bi bi-geo-alt-fill text-danger me-2"></i><?= htmlspecialchars($tiket['nama_venue']) ?></div>
                     <div class="text-muted small ps-4"><?= htmlspecialchars($tiket['alamat']) ?></div>
                 </div>
@@ -103,7 +103,7 @@ if ($tiket['status'] !== 'paid') {
 
             <div class="barcode-container">
                 <svg id="barcode"></svg>
-                <div class="mt-2 fw-bold text-dark" style="letter-spacing: 3px; font-size: 1.2rem; font-family: monospace;">
+                <div class="mt-2 fw-bold text-dark font-monospace fs-4">
                     <?= $tiket['kode_tiket'] ?>
                 </div>
             </div>

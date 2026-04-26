@@ -115,148 +115,12 @@ $pending       = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as c FR
 $sudah_checkin = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as c FROM attendee a JOIN order_detail od ON a.id_detail=od.id_detail JOIN orders o ON od.id_order=o.id_order WHERE o.id_user=$user_id AND a.status_checkin='sudah'"))['c'];
 ?>
 
-<style>
-    .page-title { font-weight: 800; letter-spacing: -0.5px; }
-    .stat-card {
-        border: none;
-        border-radius: var(--r-lg);
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-        color: white;
-        cursor: pointer;
-    }
-    .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-    .stat-card i { position: absolute; right: -10px; bottom: -10px; font-size: 4rem; opacity: 0.15; }
-    .stat-card.primary { background: var(--g-primary); }
-    .stat-card.success { background: var(--g-success); }
-    .stat-card.warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
-    .stat-card.info { background: linear-gradient(135deg, #0ea5e9, #0284c7); }
-
-    .nav-pills-premium {
-        background: #f1f5f9;
-        padding: 0.4rem;
-        border-radius: 50px;
-        gap: 0.4rem;
-    }
-    .nav-pills-premium .nav-link {
-        border-radius: 50px;
-        color: var(--txt-muted);
-        font-weight: 600;
-        padding: 0.6rem 1.2rem;
-        transition: all 0.3s ease;
-        border: none;
-    }
-    .nav-pills-premium .nav-link.active {
-        background: white;
-        color: var(--c-primary);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
-
-    .order-card {
-        border-radius: var(--r-lg);
-        border: 1px solid #f1f5f9;
-        transition: all 0.3s ease;
-        overflow: hidden;
-    }
-    .order-card:hover { transform: scale(1.01); box-shadow: 0 12px 25px rgba(0,0,0,0.05); }
-    
-    .ticket-stub {
-        background: white;
-        border-radius: var(--r-lg);
-        position: relative;
-        filter: drop-shadow(0 10px 20px rgba(0,0,0,0.05));
-        transition: all 0.3s ease;
-    }
-    .ticket-stub:hover { transform: translateY(-5px); filter: drop-shadow(0 15px 30px rgba(0,0,0,0.1)); }
-    
-    .ticket-cutout-left, .ticket-cutout-right {
-        position: absolute;
-        top: 50%;
-        width: 20px;
-        height: 20px;
-        background: var(--bg);
-        border-radius: 50%;
-        transform: translateY(-50%);
-        z-index: 2;
-    }
-    .ticket-cutout-left { left: -10px; }
-    .ticket-cutout-right { right: -10px; }
-    
-    .ticket-dash {
-        position: absolute;
-        top: 50%;
-        left: 20px;
-        right: 20px;
-        border-top: 2px dashed #e2e8f0;
-        z-index: 1;
-    }
-
-    .badge-paid { background: #dcfce7; color: #15803d; }
-    .badge-pending { background: #fef9c3; color: #a16207; }
-    .badge-cancel { background: #fee2e2; color: #b91c1c; }
-
-    /* Enhanced styles */
-    .filter-btn {
-        padding: 0.5rem 1rem;
-        border-radius: 50px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        transition: all 0.2s;
-        border: 1px solid #e2e8f0;
-        background: white;
-        color: var(--txt-muted);
-        text-decoration: none;
-    }
-    .filter-btn:hover { background: #f8fafc; border-color: var(--c-primary); color: var(--c-primary); }
-    .filter-btn.active { background: var(--c-primary); color: white; border-color: var(--c-primary); }
-
-    .countdown-box {
-        background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(5px);
-        padding: 0.2rem 0.6rem;
-        border-radius: 8px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: white;
-        display: inline-block;
-    }
-
-    /* New Premium Styles */
-    @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    .animate-in { animation: fadeInUp 0.5s ease backwards; }
-    
-    .copy-badge {
-        cursor: pointer;
-        transition: all 0.2s;
-        border: 1px solid transparent;
-    }
-    .copy-badge:hover { 
-        background: var(--bg) !important; 
-        border-color: var(--c-primary) !important;
-        color: var(--c-primary) !important;
-    }
-    .copy-badge:active { transform: scale(0.95); }
-
-    .badge-new {
-        background: var(--c-info);
-        color: white;
-        font-size: 0.65rem;
-        padding: 0.2rem 0.5rem;
-        border-radius: 4px;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-</style>
+<!-- Bootstrap-only styling -->
 
 <div class="container py-4">
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb" style="font-size: 0.85rem;">
+        <ol class="breadcrumb small">
             <li class="breadcrumb-item"><a href="?p=home" class="text-decoration-none">Home</a></li>
             <li class="breadcrumb-item"><a href="?p=dashboard_user" class="text-decoration-none">Dashboard</a></li>
             <li class="breadcrumb-item active">Riwayat</li>
@@ -266,7 +130,7 @@ $sudah_checkin = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as c FR
     <!-- Search & Filter & Sort -->
     <div class="row align-items-center mb-4 g-3">
         <div class="col-md-5">
-            <h2 class="page-title mb-1"><i class="bi bi-clock-history me-2 text-primary"></i>Riwayat Pembelian</h2>
+            <h2 class="fw-bold mb-1"><i class="bi bi-clock-history me-2 text-primary"></i>Riwayat Pembelian</h2>
             <p class="text-muted mb-0">Kelola semua transaksi dan tiket event kamu di sini.</p>
         </div>
         <div class="col-md-7">
@@ -275,19 +139,18 @@ $sudah_checkin = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as c FR
                     <input type="hidden" name="p" value="riwayat">
                     <?php if($status_filter): ?><input type="hidden" name="status" value="<?= $status_filter ?>"><?php endif; ?>
                     <?php if($sort_by): ?><input type="hidden" name="sort" value="<?= $sort_by ?>"><?php endif; ?>
-                    <input type="text" name="q" class="form-control border-0 shadow-sm" 
+                    <input type="text" name="q" class="form-control border-0 shadow-sm rounded-pill ps-5 py-2" 
                            placeholder="Cari event atau nomor order..." 
-                           value="<?= htmlspecialchars($search) ?>" 
-                           style="border-radius:50px; padding: 0.7rem 1.2rem 0.7rem 3rem;">
-                    <i class="bi bi-search position-absolute text-muted" style="left:1.2rem; top:50%; transform:translateY(-50%);"></i>
+                           value="<?= htmlspecialchars($search) ?>">
+                    <i class="bi bi-search position-absolute text-muted ms-3 top-50 translate-middle-y"></i>
                     <?php if($search): ?>
-                        <a href="?p=riwayat<?= ($status_filter ? '&status='.$status_filter : '').($sort_by ? '&sort='.$sort_by : '') ?>" class="position-absolute text-muted" style="right:1.2rem; top:50%; transform:translateY(-50%);">
+                        <a href="?p=riwayat<?= ($status_filter ? '&status='.$status_filter : '').($sort_by ? '&sort='.$sort_by : '') ?>" class="position-absolute text-muted me-3 top-50 translate-middle-y end-0">
                             <i class="bi bi-x-circle-fill"></i>
                         </a>
                     <?php endif; ?>
                 </form>
                 <div class="dropdown">
-                    <button class="btn btn-white bg-white shadow-sm dropdown-toggle rounded-pill w-100" type="button" data-bs-toggle="dropdown" style="padding: 0.7rem 1.2rem;">
+                    <button class="btn bg-white shadow-sm dropdown-toggle rounded-pill w-100 py-2 px-3" type="button" data-bs-toggle="dropdown">
                         <i class="bi bi-sort-down me-2"></i>Urutkan
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 p-2 mt-2">
@@ -304,10 +167,10 @@ $sudah_checkin = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as c FR
 
     <!-- Status Filters -->
     <div class="d-flex flex-wrap gap-2 mb-4">
-        <a href="?p=riwayat&q=<?= urlencode($search) ?>&sort=<?= $sort_by ?>" class="filter-btn <?= $status_filter == '' ? 'active' : '' ?>">Semua</a>
-        <a href="?p=riwayat&status=pending&q=<?= urlencode($search) ?>&sort=<?= $sort_by ?>" class="filter-btn <?= $status_filter == 'pending' ? 'active' : '' ?>">Pending</a>
-        <a href="?p=riwayat&status=paid&q=<?= urlencode($search) ?>&sort=<?= $sort_by ?>" class="filter-btn <?= $status_filter == 'paid' ? 'active' : '' ?>">Paid</a>
-        <a href="?p=riwayat&status=cancel&q=<?= urlencode($search) ?>&sort=<?= $sort_by ?>" class="filter-btn <?= $status_filter == 'cancel' ? 'active' : '' ?>">Cancelled</a>
+        <a href="?p=riwayat&q=<?= urlencode($search) ?>&sort=<?= $sort_by ?>" class="btn btn-sm rounded-pill <?= $status_filter == '' ? 'btn-primary' : 'btn-outline-secondary' ?>">Semua</a>
+        <a href="?p=riwayat&status=pending&q=<?= urlencode($search) ?>&sort=<?= $sort_by ?>" class="btn btn-sm rounded-pill <?= $status_filter == 'pending' ? 'btn-warning' : 'btn-outline-secondary' ?>">Pending</a>
+        <a href="?p=riwayat&status=paid&q=<?= urlencode($search) ?>&sort=<?= $sort_by ?>" class="btn btn-sm rounded-pill <?= $status_filter == 'paid' ? 'btn-success' : 'btn-outline-secondary' ?>">Paid</a>
+        <a href="?p=riwayat&status=cancel&q=<?= urlencode($search) ?>&sort=<?= $sort_by ?>" class="btn btn-sm rounded-pill <?= $status_filter == 'cancel' ? 'btn-danger' : 'btn-outline-secondary' ?>">Cancelled</a>
     </div>
 
     <!-- Stats Row -->
@@ -321,8 +184,8 @@ $sudah_checkin = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as c FR
         ];
         foreach($stat_items as $item): ?>
         <div class="col-6 col-lg-3">
-            <div class="stat-card <?= $item[0] ?> p-3 p-md-4" onclick="window.location.href='?p=riwayat&status=<?= $item[4] ?>'">
-                <i class="bi <?= $item[1] ?>"></i>
+            <div class="card border-0 bg-<?= $item[0] ?> text-white shadow-sm p-3 p-md-4" role="button" onclick="window.location.href='?p=riwayat&status=<?= $item[4] ?>'">
+                <i class="bi <?= $item[1] ?> fs-4 mb-2"></i>
                 <div class="h3 fw-bold mb-0"><?= $item[2] ?></div>
                 <div class="small opacity-75 fw-medium"><?= $item[3] ?></div>
             </div>
@@ -332,17 +195,17 @@ $sudah_checkin = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as c FR
 
     <!-- Main Navigation Tabs -->
     <div class="d-flex justify-content-center mb-4">
-        <ul class="nav nav-pills nav-pills-premium" id="riwayatTab" role="tablist">
+        <ul class="nav nav-pills bg-light rounded-pill p-1 gap-1" id="riwayatTab" role="tablist">
             <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="order-tab" data-bs-toggle="tab" data-bs-target="#order" type="button" onclick="window.location.hash='#order'">
+                <button class="nav-link rounded-pill active" id="order-tab" data-bs-toggle="tab" data-bs-target="#order" type="button" onclick="window.location.hash='#order'">
                     <i class="bi bi-receipt me-2"></i>Pesanan
-                    <span class="badge bg-primary-light text-primary ms-2" style="background: rgba(99,102,241,0.1);"><?= $total_data_o ?></span>
+                    <span class="badge bg-primary bg-opacity-10 text-primary ms-2"><?= $total_data_o ?></span>
                 </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tiket-tab" data-bs-toggle="tab" data-bs-target="#tiket" type="button" onclick="window.location.hash='#tiket'">
+                <button class="nav-link rounded-pill" id="tiket-tab" data-bs-toggle="tab" data-bs-target="#tiket" type="button" onclick="window.location.hash='#tiket'">
                     <i class="bi bi-ticket-perforated me-2"></i>Tiket Saya
-                    <span class="badge bg-primary-light text-primary ms-2" style="background: rgba(99,102,241,0.1);"><?= $total_data_t ?></span>
+                    <span class="badge bg-primary bg-opacity-10 text-primary ms-2"><?= $total_data_t ?></span>
                 </button>
             </li>
         </ul>
@@ -358,16 +221,16 @@ $sudah_checkin = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as c FR
                 while ($row = mysqli_fetch_assoc($query)):
                     $status_class = "badge-" . $row['status'];
                 ?>
-                    <div class="order-card bg-white animate-in" style="animation-delay: <?= $delay ?>s">
+                    <div class="card border-0 shadow-sm rounded-3 overflow-hidden bg-white">
                         <?php $delay += 0.1; ?>
                         <div class="row g-0">
                             <div class="col-md-3">
-                                <div class="position-relative h-100" style="min-height: 200px;">
+                                <div class="position-relative h-100 min-vh-25">
                                     <img src="<?= $row['gambar'] ? 'uploads/'.$row['gambar'] : 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=500&q=80' ?>" 
                                          class="w-100 h-100 object-fit-cover" alt="Event"
                                          onerror="this.src='https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=500&q=80'">
                                     <div class="position-absolute top-0 start-0 m-3">
-                                        <span class="badge <?= $status_class ?> rounded-pill shadow-sm px-3 py-2 text-uppercase">
+                                        <span class="badge bg-<?= $row['status'] === 'paid' ? 'success' : ($row['status'] === 'pending' ? 'warning' : 'danger') ?> rounded-pill shadow-sm px-3 py-2 text-uppercase">
                                             <?= $row['status'] ?>
                                         </span>
                                     </div>
@@ -378,13 +241,13 @@ $sudah_checkin = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as c FR
                                         <div class="flex-grow-1">
                                             <div class="d-flex align-items-center gap-2 mb-1">
                                                 <div class="text-muted small fw-bold">
-                                                    ORDER <span class="copy-badge bg-light px-2 py-0.5 rounded" onclick="copyToClipboard('#<?= $row['id_order'] ?>', 'ID Order')">#<?= $row['id_order'] ?></span> 
+                                                    ORDER <span class="bg-light px-2 rounded" role="button" onclick="copyToClipboard('#<?= $row['id_order'] ?>', 'ID Order')">#<?= $row['id_order'] ?></span> 
                                                     • <?= date('d M Y, H:i', strtotime($row['tanggal_order'])) ?>
                                                 </div>
                                                 <?php 
                                                 $is_new = (time() - strtotime($row['tanggal_order'])) < 300; // 5 minutes
                                                 if($is_new): ?>
-                                                    <span class="badge-new">Baru</span>
+                                                    <span class="badge bg-info text-white small">Baru</span>
                                                 <?php endif; ?>
                                             </div>
                                             <h5 class="fw-bold mb-2"><?= htmlspecialchars($row['nama_event']) ?></h5>
@@ -406,7 +269,7 @@ $sudah_checkin = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as c FR
                                             </div>
                                         </div>
                                         
-                                        <div class="text-md-end d-flex flex-column justify-content-between align-items-md-end" style="min-width: 200px;">
+                                        <div class="text-md-end d-flex flex-column justify-content-between align-items-md-end min-vw-15">
                                             <div>
                                                 <div class="text-muted small fw-medium mb-1">Total Pembayaran</div>
                                                 <div class="h4 fw-bold text-primary mb-3">Rp <?= number_format($row['total'], 0, ',', '.') ?></div>
@@ -478,7 +341,7 @@ $sudah_checkin = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as c FR
 
             <?php else: ?>
             <div class="text-center py-5">
-                <img src="https://illustrations.popsy.co/gray/shopping-cart.svg" alt="Empty" style="width: 150px; opacity: 0.5;" class="mb-4">
+                <img src="https://illustrations.popsy.co/gray/shopping-cart.svg" alt="Empty" class="mb-4 opacity-50 w-25">
                 <h5 class="fw-bold">Tidak ada pesanan ditemukan</h5>
                 <p class="text-muted">Coba sesuaikan filter atau kata kunci pencarian kamu.</p>
                 <a href="?p=home" class="btn btn-primary rounded-pill px-4 mt-2">Mulai Cari Event</a>
@@ -502,22 +365,22 @@ $sudah_checkin = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as c FR
                     $diff = $event_date - $now;
                     $days_left = ceil($diff / (60 * 60 * 24));
                 ?>
-                <div class="col-md-6 col-xl-4 animate-in" style="animation-delay: <?= $delay_t ?>s">
+                <div class="col-md-6 col-xl-4">
                     <?php $delay_t += 0.1; ?>
-                    <div class="ticket-stub h-100 overflow-hidden d-flex flex-column">
+                    <div class="card bg-white shadow-sm h-100 overflow-hidden d-flex flex-column rounded-3">
                         <!-- Top Image Part -->
-                        <div style="height: 140px; position: relative;">
+                        <div class="ratio ratio-21x9 position-relative">
                             <img src="<?= $tkt['gambar'] ? 'uploads/'.$tkt['gambar'] : 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=500&q=80' ?>" 
                                  class="w-100 h-100 object-fit-cover" alt="Event"
                                  onerror="this.src='https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=500&q=80'">
                             
                             <div class="position-absolute top-0 start-0 m-3">
                                 <?php if($days_left > 0): ?>
-                                    <div class="countdown-box shadow-sm">
+                                    <div class="badge bg-dark bg-opacity-50 text-white rounded-2 shadow-sm px-2 py-1 small fw-bold">
                                         <i class="bi bi-hourglass-split me-1"></i><?= $days_left ?> Hari Lagi
                                     </div>
                                 <?php elseif($days_left == 0): ?>
-                                    <div class="countdown-box shadow-sm bg-danger">
+                                    <div class="badge bg-danger text-white rounded-2 shadow-sm px-2 py-1 small fw-bold">
                                         <i class="bi bi-fire me-1"></i>Hari Ini!
                                     </div>
                                 <?php endif; ?>
@@ -538,22 +401,20 @@ $sudah_checkin = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as c FR
 
                         <!-- Ticket Body -->
                         <div class="p-4 pt-3 flex-grow-1 position-relative">
-                            <div class="ticket-cutout-left"></div>
-                            <div class="ticket-cutout-right"></div>
-                            <div class="ticket-dash"></div>
+                            <hr class="my-0">
 
                             <div class="mb-4">
-                                <div class="text-primary fw-bold small text-uppercase mb-1" style="letter-spacing: 1px;"><?= htmlspecialchars($tkt['nama_tiket']) ?></div>
+                                <div class="text-primary fw-bold small text-uppercase mb-1"><?= htmlspecialchars($tkt['nama_tiket']) ?></div>
                                 <h5 class="fw-bold mb-3 text-truncate" title="<?= htmlspecialchars($tkt['nama_event']) ?>"><?= htmlspecialchars($tkt['nama_event']) ?></h5>
                                 
                                 <div class="d-flex align-items-start gap-3 mb-3">
-                                    <div class="bg-light rounded p-2 text-center" style="min-width: 50px;">
+                                    <div class="bg-light rounded p-2 text-center px-3">
                                         <div class="fw-bold lh-1"><?= date('d', strtotime($tkt['tanggal'])) ?></div>
-                                        <div class="small text-muted" style="font-size: 0.65rem;"><?= date('M', strtotime($tkt['tanggal'])) ?></div>
+                                        <div class="small text-muted small"><?= date('M', strtotime($tkt['tanggal'])) ?></div>
                                     </div>
                                     <div class="flex-grow-1">
                                         <div class="small fw-bold text-dark"><i class="bi bi-geo-alt text-danger me-1"></i> <?= htmlspecialchars($tkt['nama_venue']) ?></div>
-                                        <div class="small text-muted text-truncate" style="max-width: 180px;"><?= htmlspecialchars($tkt['alamat']) ?></div>
+                                        <div class="small text-muted text-truncate col-8"><?= htmlspecialchars($tkt['alamat']) ?></div>
                                     </div>
                                 </div>
 
@@ -575,8 +436,8 @@ $sudah_checkin = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as c FR
 
                             <div class="bg-light rounded-4 p-3 text-center border border-dashed">
                                 <?php if ($is_paid): ?>
-                                    <div class="small text-muted text-uppercase fw-bold mb-2" style="font-size: 0.65rem; letter-spacing: 2px;">Kode Tiket</div>
-                                    <div class="h4 fw-bold font-monospace text-primary mb-3 copy-badge rounded" onclick="copyToClipboard('<?= $tkt['kode_tiket'] ?>', 'Kode Tiket')"><?= $tkt['kode_tiket'] ?></div>
+                                    <div class="small text-muted text-uppercase fw-bold mb-2 small">Kode Tiket</div>
+                                    <div class="h4 fw-bold font-monospace text-primary mb-3 rounded" role="button" onclick="copyToClipboard('<?= $tkt['kode_tiket'] ?>', 'Kode Tiket')"><?= $tkt['kode_tiket'] ?></div>
                                     <div class="d-flex gap-2">
                                         <button class="btn btn-outline-primary flex-grow-1 rounded-pill" onclick="showQuickBarcode('<?= $tkt['kode_tiket'] ?>', '<?= addslashes($tkt['nama_event']) ?>')">
                                             <i class="bi bi-qr-code me-2"></i>Quick Scan
@@ -600,11 +461,11 @@ $sudah_checkin = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as c FR
                         <div class="px-4 pb-4 mt-n2">
                             <div class="d-flex justify-content-between align-items-center bg-white border rounded-pill px-3 py-2">
                                 <div class="d-flex align-items-center gap-2">
-                                    <div class="dot <?= $is_done ? 'bg-success' : 'bg-warning' ?>" style="width: 8px; height: 8px; border-radius: 50%;"></div>
+                                    <div class="rounded-circle bg-<?= $is_done ? 'success' : 'warning' ?> p-1"></div>
                                     <span class="small fw-medium text-muted"><?= $is_done ? 'Sudah Digunakan' : 'Siap Digunakan' ?></span>
                                 </div>
                                 <?php if($is_done): ?>
-                                    <div class="small text-muted" style="font-size: 0.65rem;"><?= date('d M, H:i', strtotime($tkt['waktu_checkin'])) ?></div>
+                                    <div class="small text-muted small"><?= date('d M, H:i', strtotime($tkt['waktu_checkin'])) ?></div>
                                 <?php else: ?>
                                     <i class="bi bi-qr-code-scan text-muted"></i>
                                 <?php endif; ?>
@@ -638,7 +499,7 @@ $sudah_checkin = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as c FR
 
             <?php else: ?>
             <div class="text-center py-5">
-                <img src="https://illustrations.popsy.co/gray/ticket.svg" alt="Empty" style="width: 150px; opacity: 0.5;" class="mb-4">
+                <img src="https://illustrations.popsy.co/gray/ticket.svg" alt="Empty" class="mb-4 opacity-50 w-25">
                 <h5 class="fw-bold">Tidak ada tiket ditemukan</h5>
                 <p class="text-muted">Coba sesuaikan filter atau kata kunci pencarian kamu.</p>
                 <a href="?p=home" class="btn btn-primary rounded-pill px-4 mt-2">Cari Event Seru</a>
@@ -736,10 +597,10 @@ function showQuickBarcode(kode, event) {
         html: `
             <div class="text-center p-3">
                 <div class="fw-bold mb-3">${event}</div>
-                <div class="bg-white p-4 rounded-4 border border-dashed mb-3" style="display:inline-block;">
+                <div class="bg-white p-4 rounded-4 border border-dashed mb-3 d-inline-block">
                     <svg id="quick-barcode"></svg>
                 </div>
-                <div class="h4 fw-bold font-monospace text-primary" style="letter-spacing: 4px;">${kode}</div>
+                <div class="h4 fw-bold font-monospace text-primary tracking-widest">${kode}</div>
                 <p class="text-muted small mt-3 mb-0">Tunjukkan barcode ini kepada petugas di pintu masuk.</p>
             </div>
         `,
@@ -762,7 +623,7 @@ function showOrderDetail(data) {
     const formatRp = (num) => 'Rp ' + new Intl.NumberFormat('id-ID').format(num);
     
     let html = `
-        <div class="text-start" style="font-size: 0.9rem;">
+        <div class="text-start small">
             <div class="mb-4 p-3 rounded bg-light border">
                 <div class="d-flex justify-content-between mb-1">
                     <span class="text-muted">No. Pesanan</span>

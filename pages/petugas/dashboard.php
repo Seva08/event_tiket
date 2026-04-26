@@ -27,27 +27,52 @@ $total_checkin = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as tota
 <div class="container-fluid">
     <div class="row">
         <!-- Sidebar Petugas -->
-        <nav class="col-md-2 d-none d-md-block bg-dark sidebar py-4">
-            <div class="sidebar-sticky">
-                <h5 class="text-white px-3 mb-3"><i class="bi bi-person-badge"></i> Menu Petugas</h5>
-                <ul class="nav flex-column">
-                    <li class="nav-item"><a class="nav-link text-white active" href="?p=dashboard_petugas"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="?p=petugas_checkin"><i class="bi bi-qr-code-scan"></i> Scan Check-in</a></li>
-                </ul>
+        <nav class="col-md-2 d-none d-md-block py-2" id="adminSidebar">
+            <div class="px-3 py-3 mb-1">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="bg-success text-white rounded-2 d-inline-flex align-items-center justify-content-center p-2">
+                        <i class="bi bi-person-badge-fill small"></i>
+                    </span>
+                    <div>
+                        <div class="text-light fw-bold small lh-sm">Panel Petugas</div>
+                        <div class="text-secondary small"><?= htmlspecialchars($_SESSION['nama'] ?? '') ?></div>
+                    </div>
+                </div>
             </div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link text-light d-flex align-items-center gap-2 mx-2 rounded-2 <?= (isset($_GET['p']) && $_GET['p'] === 'dashboard_petugas') ? 'active bg-primary' : '' ?>"
+                       href="?p=dashboard_petugas">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-light d-flex align-items-center gap-2 mx-2 rounded-2 <?= (isset($_GET['p']) && $_GET['p'] === 'petugas_checkin') ? 'active bg-primary' : '' ?>"
+                       href="?p=petugas_checkin">
+                        <i class="bi bi-qr-code-scan"></i> Scan Check-in
+                    </a>
+                </li>
+                <li><div class="text-secondary fw-bold text-uppercase px-3 pt-3 pb-1 small">AKUN</div></li>
+                <li class="nav-item">
+                    <a class="nav-link text-light d-flex align-items-center gap-2 mx-2 rounded-2 text-danger"
+                       href="?p=logout">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </a>
+                </li>
+            </ul>
         </nav>
 
         <main class="col-md-10 ms-sm-auto px-md-4 py-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <h2 class="page-title"><i class="bi bi-person-badge"></i> Dashboard Petugas</h2>
+                    <h2 class="fw-bold"><i class="bi bi-person-badge"></i> Dashboard Petugas</h2>
                     <p class="text-muted mb-0">Kelola transaksi dan check-in pengunjung</p>
                 </div>
                 <span class="badge bg-primary fs-6 px-3 py-2"><i class="bi bi-calendar3"></i> <?= date('d M Y') ?></span>
             </div>
 
             <!-- Welcome Banner -->
-            <div class="card border-0 shadow-sm mb-4 bg-primary text-white" style="border-radius: var(--r-lg, 16px); background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);">
+            <div class="card border-0 shadow-sm mb-4 bg-primary text-white rounded-3">
                 <div class="card-body p-4 d-flex align-items-center">
                     <div class="bg-white bg-opacity-25 rounded-circle p-3 me-4 d-none d-sm-block">
                         <i class="bi bi-person-vcard fs-1"></i>
@@ -62,14 +87,14 @@ $total_checkin = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as tota
             <!-- Statistik Check-in Utama -->
             <div class="row mb-4">
                 <div class="col-12">
-                    <div class="card border-0 shadow-sm" style="border-radius: var(--r-lg, 16px); background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
+                    <div class="card border-0 shadow-sm rounded-3 bg-success text-white">
                         <div class="card-body p-4">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h6 class="text-uppercase fw-bold text-white text-opacity-75 mb-1" style="letter-spacing: 1px;"><i class="bi bi-qr-code-scan me-2"></i>Total Check-in Hari Ini</h6>
+                                    <h6 class="text-uppercase fw-bold text-white opacity-75 mb-1 small"><i class="bi bi-qr-code-scan me-2"></i>Total Check-in Hari Ini</h6>
                                     <h1 class="display-4 fw-bold mb-0"><?= $total_checkin ?> <span class="fs-4 fw-normal text-white text-opacity-75">Orang</span></h1>
                                 </div>
-                                <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center d-none d-sm-flex" style="width: 80px; height: 80px;">
+                                <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center d-none d-sm-flex p-4 ratio ratio-1x1 w-auto">
                                     <i class="bi bi-person-check-fill fs-1"></i>
                                 </div>
                             </div>
@@ -79,13 +104,13 @@ $total_checkin = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as tota
             </div>
 
             <!-- Statistik Order Pendukung -->
-            <h6 class="fw-bold text-muted text-uppercase mb-3" style="letter-spacing: 1px; font-size: 0.8rem;">Statistik Transaksi Keseluruhan</h6>
+            <h6 class="fw-bold text-muted text-uppercase mb-3 small">Statistik Transaksi Keseluruhan</h6>
             <div class="row g-3 mb-4">
                 <div class="col-md-3 col-6">
-                    <div class="card border-0 shadow-sm h-100" style="border-radius: var(--r-md, 8px); border-left: 4px solid #3b82f6 !important;">
+                    <div class="card border-0 shadow-sm h-100 border-start border-primary border-4">
                         <div class="card-body p-3">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <small class="text-muted fw-bold text-uppercase" style="font-size: 0.75rem;">Total Order</small>
+                                <small class="text-muted fw-bold text-uppercase small">Total Order</small>
                                 <div class="bg-primary bg-opacity-10 rounded p-1"><i class="bi bi-receipt text-primary"></i></div>
                             </div>
                             <h3 class="fw-bold mb-0 text-dark"><?= $total_order ?></h3>
@@ -93,10 +118,10 @@ $total_checkin = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as tota
                     </div>
                 </div>
                 <div class="col-md-3 col-6">
-                    <div class="card border-0 shadow-sm h-100" style="border-radius: var(--r-md, 8px); border-left: 4px solid #f59e0b !important;">
+                    <div class="card border-0 shadow-sm h-100 border-start border-warning border-4">
                         <div class="card-body p-3">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <small class="text-muted fw-bold text-uppercase" style="font-size: 0.75rem;">Pending</small>
+                                <small class="text-muted fw-bold text-uppercase small">Pending</small>
                                 <div class="bg-warning bg-opacity-10 rounded p-1"><i class="bi bi-clock text-warning"></i></div>
                             </div>
                             <h3 class="fw-bold mb-0 text-dark"><?= $pending ?></h3>
@@ -104,10 +129,10 @@ $total_checkin = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as tota
                     </div>
                 </div>
                 <div class="col-md-3 col-6">
-                    <div class="card border-0 shadow-sm h-100" style="border-radius: var(--r-md, 8px); border-left: 4px solid #10b981 !important;">
+                    <div class="card border-0 shadow-sm h-100 border-start border-success border-4">
                         <div class="card-body p-3">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <small class="text-muted fw-bold text-uppercase" style="font-size: 0.75rem;">Paid</small>
+                                <small class="text-muted fw-bold text-uppercase small">Paid</small>
                                 <div class="bg-success bg-opacity-10 rounded p-1"><i class="bi bi-check-circle text-success"></i></div>
                             </div>
                             <h3 class="fw-bold mb-0 text-dark"><?= $paid ?></h3>
@@ -115,10 +140,10 @@ $total_checkin = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as tota
                     </div>
                 </div>
                 <div class="col-md-3 col-6">
-                    <div class="card border-0 shadow-sm h-100" style="border-radius: var(--r-md, 8px); border-left: 4px solid #ef4444 !important;">
+                    <div class="card border-0 shadow-sm h-100 border-start border-danger border-4">
                         <div class="card-body p-3">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <small class="text-muted fw-bold text-uppercase" style="font-size: 0.75rem;">Cancelled</small>
+                                <small class="text-muted fw-bold text-uppercase small">Cancelled</small>
                                 <div class="bg-danger bg-opacity-10 rounded p-1"><i class="bi bi-x-circle text-danger"></i></div>
                             </div>
                             <h3 class="fw-bold mb-0 text-dark"><?= $cancelled ?></h3>
