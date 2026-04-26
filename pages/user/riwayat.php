@@ -1,5 +1,6 @@
 <?php
 // Validasi login & role
+include 'config.php';
 if (!isset($_SESSION['id_user']) || $_SESSION['role'] !== 'user') {
     echo "<script>alert('Akses ditolak!'); window.location='?p=home';</script>";
     exit;
@@ -7,14 +8,57 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] !== 'user') {
 
 $user_id = $_SESSION['id_user'];
 
-// Search Logic
+// Handle Cancel Order
+if (isset($_POST['action']) && $_POST['action'] == 'cancel_order') {
+    $id_order = (int)$_POST['id_order'];
+    $check = mysqli_query($conn, "SELECT status, id_voucher FROM orders WHERE id_order = $id_order AND id_user = $user_id");
+    $order = mysqli_fetch_assoc($check);
+    
+    if ($order && $order['status'] == 'pending') {
+        if ($order['id_voucher']) {
+            mysqli_query($conn, "UPDATE voucher SET kuota = kuota + 1 WHERE id_voucher = " . $order['id_voucher']);
+        }
+        $details = mysqli_query($conn, "SELECT id_tiket, qty FROM order_detail WHERE id_order = $id_order");
+        while ($d = mysqli_fetch_assoc($details)) {
+            mysqli_query($conn, "UPDATE tiket SET kuota = kuota + " . $d['qty'] . " WHERE id_tiket = " . $d['id_tiket']);
+        }
+        mysqli_query($conn, "UPDATE orders SET status = 'cancel' WHERE id_order = $id_order");
+        echo json_encode(['status' => 'success', 'message' => 'Pesanan berhasil dibatalkan']);
+    } else {
+        echo json_encode(['status' => 'error', 'message' => 'Pesanan tidak dapat dibatalkan']);
+    }
+    exit;
+}
+
+// Search & Filter Logic
 $search = isset($_GET['q']) ? mysqli_real_escape_string($conn, $_GET['q']) : '';
+$status_filter = isset($_GET['status']) ? mysqli_real_escape_string($conn, $_GET['status']) : '';
+$sort_by = isset($_GET['sort']) ? $_GET['sort'] : 'newest';
+
 $where_order = "o.id_user = $user_id";
 $where_tiket = "o.id_user = $user_id";
 
 if ($search) {
     $where_order .= " AND (e.nama_event LIKE '%$search%' OR o.id_order LIKE '%$search%' OR t.nama_tiket LIKE '%$search%')";
     $where_tiket .= " AND (e.nama_event LIKE '%$search%' OR a.kode_tiket LIKE '%$search%' OR t.nama_tiket LIKE '%$search%')";
+}
+
+if ($status_filter) {
+    $where_order .= " AND o.status = '$status_filter'";
+    $where_tiket .= " AND o.status = '$status_filter'";
+}
+
+// Sorting logic
+$order_sort = "o.tanggal_order DESC";
+$ticket_sort = "e.tanggal DESC";
+
+if ($sort_by === 'oldest') {
+    $order_sort = "o.tanggal_order ASC";
+    $ticket_sort = "e.tanggal ASC";
+} elseif ($sort_by === 'price_high') {
+    $order_sort = "o.total DESC";
+} elseif ($sort_by === 'price_low') {
+    $order_sort = "o.total ASC";
 }
 
 // Pagination Pesanan
@@ -31,13 +75,14 @@ $total_data_o = mysqli_fetch_assoc($q_total_o)['c'];
 $total_page_o = ceil($total_data_o / $limit_o);
 
 $query = mysqli_query($conn,
-    "SELECT o.*, od.qty, t.nama_tiket, e.nama_event, e.tanggal, v.kode_voucher, v.potongan
+    "SELECT o.*, od.qty, t.nama_tiket, t.harga as harga_tiket, e.nama_event, e.tanggal, e.gambar, v.kode_voucher, v.potongan, vn.nama_venue, vn.alamat
      FROM orders o
      JOIN order_detail od ON o.id_order = od.id_order
      JOIN tiket t ON od.id_tiket = t.id_tiket
      JOIN event e ON t.id_event = e.id_event
+     JOIN venue vn ON e.id_venue = vn.id_venue
      LEFT JOIN voucher v ON o.id_voucher = v.id_voucher
-     WHERE $where_order ORDER BY o.tanggal_order DESC LIMIT $limit_o OFFSET $offset_o");
+     WHERE $where_order ORDER BY $order_sort LIMIT $limit_o OFFSET $offset_o");
 
 // Pagination Tiket
 $limit_t = 6;
@@ -54,13 +99,14 @@ $total_data_t = mysqli_fetch_assoc($q_total_t)['c'];
 $total_page_t = ceil($total_data_t / $limit_t);
 
 $attendees = mysqli_query($conn,
-    "SELECT od.*, t.nama_tiket, e.nama_event, e.tanggal, o.status, o.id_order, a.kode_tiket, a.status_checkin, a.waktu_checkin
+    "SELECT od.*, t.nama_tiket, e.nama_event, e.tanggal, e.gambar, vn.nama_venue, vn.alamat, o.status, o.id_order, a.kode_tiket, a.status_checkin, a.waktu_checkin
      FROM order_detail od
      JOIN orders o ON od.id_order = o.id_order
      JOIN tiket t ON od.id_tiket = t.id_tiket
      JOIN event e ON t.id_event = e.id_event
+     JOIN venue vn ON e.id_venue = vn.id_venue
      LEFT JOIN attendee a ON od.id_detail = a.id_detail
-     WHERE $where_tiket ORDER BY e.tanggal DESC LIMIT $limit_t OFFSET $offset_t");
+     WHERE $where_tiket ORDER BY $ticket_sort LIMIT $limit_t OFFSET $offset_t");
 
 // Overall Stats (Without search filter)
 $total_order   = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as c FROM orders WHERE id_user=$user_id"))['c'];
@@ -69,164 +115,373 @@ $pending       = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as c FR
 $sudah_checkin = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as c FROM attendee a JOIN order_detail od ON a.id_detail=od.id_detail JOIN orders o ON od.id_order=o.id_order WHERE o.id_user=$user_id AND a.status_checkin='sudah'"))['c'];
 ?>
 
+<style>
+    .page-title { font-weight: 800; letter-spacing: -0.5px; }
+    .stat-card {
+        border: none;
+        border-radius: var(--r-lg);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        color: white;
+        cursor: pointer;
+    }
+    .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+    .stat-card i { position: absolute; right: -10px; bottom: -10px; font-size: 4rem; opacity: 0.15; }
+    .stat-card.primary { background: var(--g-primary); }
+    .stat-card.success { background: var(--g-success); }
+    .stat-card.warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .stat-card.info { background: linear-gradient(135deg, #0ea5e9, #0284c7); }
+
+    .nav-pills-premium {
+        background: #f1f5f9;
+        padding: 0.4rem;
+        border-radius: 50px;
+        gap: 0.4rem;
+    }
+    .nav-pills-premium .nav-link {
+        border-radius: 50px;
+        color: var(--txt-muted);
+        font-weight: 600;
+        padding: 0.6rem 1.2rem;
+        transition: all 0.3s ease;
+        border: none;
+    }
+    .nav-pills-premium .nav-link.active {
+        background: white;
+        color: var(--c-primary);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .order-card {
+        border-radius: var(--r-lg);
+        border: 1px solid #f1f5f9;
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+    .order-card:hover { transform: scale(1.01); box-shadow: 0 12px 25px rgba(0,0,0,0.05); }
+    
+    .ticket-stub {
+        background: white;
+        border-radius: var(--r-lg);
+        position: relative;
+        filter: drop-shadow(0 10px 20px rgba(0,0,0,0.05));
+        transition: all 0.3s ease;
+    }
+    .ticket-stub:hover { transform: translateY(-5px); filter: drop-shadow(0 15px 30px rgba(0,0,0,0.1)); }
+    
+    .ticket-cutout-left, .ticket-cutout-right {
+        position: absolute;
+        top: 50%;
+        width: 20px;
+        height: 20px;
+        background: var(--bg);
+        border-radius: 50%;
+        transform: translateY(-50%);
+        z-index: 2;
+    }
+    .ticket-cutout-left { left: -10px; }
+    .ticket-cutout-right { right: -10px; }
+    
+    .ticket-dash {
+        position: absolute;
+        top: 50%;
+        left: 20px;
+        right: 20px;
+        border-top: 2px dashed #e2e8f0;
+        z-index: 1;
+    }
+
+    .badge-paid { background: #dcfce7; color: #15803d; }
+    .badge-pending { background: #fef9c3; color: #a16207; }
+    .badge-cancel { background: #fee2e2; color: #b91c1c; }
+
+    /* Enhanced styles */
+    .filter-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: all 0.2s;
+        border: 1px solid #e2e8f0;
+        background: white;
+        color: var(--txt-muted);
+        text-decoration: none;
+    }
+    .filter-btn:hover { background: #f8fafc; border-color: var(--c-primary); color: var(--c-primary); }
+    .filter-btn.active { background: var(--c-primary); color: white; border-color: var(--c-primary); }
+
+    .countdown-box {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(5px);
+        padding: 0.2rem 0.6rem;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: white;
+        display: inline-block;
+    }
+
+    /* New Premium Styles */
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in { animation: fadeInUp 0.5s ease backwards; }
+    
+    .copy-badge {
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+    }
+    .copy-badge:hover { 
+        background: var(--bg) !important; 
+        border-color: var(--c-primary) !important;
+        color: var(--c-primary) !important;
+    }
+    .copy-badge:active { transform: scale(0.95); }
+
+    .badge-new {
+        background: var(--c-info);
+        color: white;
+        font-size: 0.65rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+</style>
+
 <div class="container py-4">
     <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb" class="mb-3">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="?p=home">Home</a></li>
-            <li class="breadcrumb-item"><a href="?p=dashboard_user">Dashboard</a></li>
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb" style="font-size: 0.85rem;">
+            <li class="breadcrumb-item"><a href="?p=home" class="text-decoration-none">Home</a></li>
+            <li class="breadcrumb-item"><a href="?p=dashboard_user" class="text-decoration-none">Dashboard</a></li>
             <li class="breadcrumb-item active">Riwayat</li>
         </ol>
     </nav>
 
-    <div class="d-flex flex-wrap justify-content-between align-items-start align-items-md-center mb-4 gap-3">
-        <div>
-            <h2 class="page-title mb-1"><i class="bi bi-clock-history me-2" style="color:var(--c-primary)"></i>Riwayat Pembelian</h2>
-            <p class="text-muted mb-0" style="font-size:.87rem;">Semua transaksi dan tiket yang kamu miliki</p>
+    <!-- Search & Filter & Sort -->
+    <div class="row align-items-center mb-4 g-3">
+        <div class="col-md-5">
+            <h2 class="page-title mb-1"><i class="bi bi-clock-history me-2 text-primary"></i>Riwayat Pembelian</h2>
+            <p class="text-muted mb-0">Kelola semua transaksi dan tiket event kamu di sini.</p>
         </div>
-        <div class="d-flex flex-wrap gap-2 w-100" style="max-width: 400px; justify-content: flex-md-end;">
-            <form method="GET" action="index.php" class="position-relative flex-grow-1">
-                <input type="hidden" name="p" value="riwayat">
-                <input type="text" name="q" class="form-control border-0 shadow-sm" placeholder="Cari event, tiket..." value="<?= htmlspecialchars($search) ?>" style="border-radius:50px; padding-left:2.4rem; padding-right: <?= $search ? '2.5rem' : '1rem' ?>;">
-                <i class="bi bi-search position-absolute text-muted" style="left:1rem; top:50%; transform:translateY(-50%); font-size:0.9rem;"></i>
-                <?php if($search): ?>
-                    <a href="?p=riwayat" class="btn btn-sm position-absolute" style="right:4px; top:50%; transform:translateY(-50%); border-radius:50%; padding:0.2rem 0.4rem;">
-                        <i class="bi bi-x-circle-fill text-muted" style="font-size:1rem; opacity:0.7;"></i>
-                    </a>
-                <?php endif; ?>
-            </form>
-            <a href="?p=home" class="btn btn-primary shadow-sm d-flex align-items-center" style="border-radius:50px; white-space:nowrap; padding: 0.4rem 1.2rem;">
-                <i class="bi bi-plus-circle me-2"></i>Pesan Tiket
-            </a>
+        <div class="col-md-7">
+            <div class="d-flex flex-column flex-md-row gap-2">
+                <form method="GET" action="index.php" class="position-relative flex-grow-1">
+                    <input type="hidden" name="p" value="riwayat">
+                    <?php if($status_filter): ?><input type="hidden" name="status" value="<?= $status_filter ?>"><?php endif; ?>
+                    <?php if($sort_by): ?><input type="hidden" name="sort" value="<?= $sort_by ?>"><?php endif; ?>
+                    <input type="text" name="q" class="form-control border-0 shadow-sm" 
+                           placeholder="Cari event atau nomor order..." 
+                           value="<?= htmlspecialchars($search) ?>" 
+                           style="border-radius:50px; padding: 0.7rem 1.2rem 0.7rem 3rem;">
+                    <i class="bi bi-search position-absolute text-muted" style="left:1.2rem; top:50%; transform:translateY(-50%);"></i>
+                    <?php if($search): ?>
+                        <a href="?p=riwayat<?= ($status_filter ? '&status='.$status_filter : '').($sort_by ? '&sort='.$sort_by : '') ?>" class="position-absolute text-muted" style="right:1.2rem; top:50%; transform:translateY(-50%);">
+                            <i class="bi bi-x-circle-fill"></i>
+                        </a>
+                    <?php endif; ?>
+                </form>
+                <div class="dropdown">
+                    <button class="btn btn-white bg-white shadow-sm dropdown-toggle rounded-pill w-100" type="button" data-bs-toggle="dropdown" style="padding: 0.7rem 1.2rem;">
+                        <i class="bi bi-sort-down me-2"></i>Urutkan
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 p-2 mt-2">
+                        <li><a class="dropdown-item rounded-3 <?= $sort_by == 'newest' ? 'active' : '' ?>" href="?p=riwayat&q=<?= urlencode($search) ?>&status=<?= $status_filter ?>&sort=newest">Terbaru</a></li>
+                        <li><a class="dropdown-item rounded-3 <?= $sort_by == 'oldest' ? 'active' : '' ?>" href="?p=riwayat&q=<?= urlencode($search) ?>&status=<?= $status_filter ?>&sort=oldest">Terlama</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item rounded-3 <?= $sort_by == 'price_high' ? 'active' : '' ?>" href="?p=riwayat&q=<?= urlencode($search) ?>&status=<?= $status_filter ?>&sort=price_high">Harga Tertinggi</a></li>
+                        <li><a class="dropdown-item rounded-3 <?= $sort_by == 'price_low' ? 'active' : '' ?>" href="?p=riwayat&q=<?= urlencode($search) ?>&status=<?= $status_filter ?>&sort=price_low">Harga Terendah</a></li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Stats -->
-    <div class="row g-3 mb-4">
-        <?php $stats = [
-            ['primary','bi-cart-check',    $total_order,   'Total Pesanan'],
-            ['success','bi-check-circle-fill',$berhasil,   'Berhasil Bayar'],
-            ['warning','bi-clock-fill',    $pending,       'Menunggu'],
-            ['info',   'bi-qr-code-scan',  $sudah_checkin, 'Sudah Check-in'],
-        ]; foreach ($stats as $s): ?>
-        <div class="col-6 col-md-3">
-            <div class="stat-card <?= $s[0] ?> h-100" style="padding:1.2rem;">
-                <i class="bi <?= $s[1] ?> mb-2 d-block" style="font-size:1.6rem;opacity:.85;"></i>
-                <h3 class="mb-0" style="font-size:1.9rem;"><?= $s[2] ?></h3>
-                <p class="mb-0" style="font-size:.76rem;opacity:.85;"><?= $s[3] ?></p>
+    <!-- Status Filters -->
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <a href="?p=riwayat&q=<?= urlencode($search) ?>&sort=<?= $sort_by ?>" class="filter-btn <?= $status_filter == '' ? 'active' : '' ?>">Semua</a>
+        <a href="?p=riwayat&status=pending&q=<?= urlencode($search) ?>&sort=<?= $sort_by ?>" class="filter-btn <?= $status_filter == 'pending' ? 'active' : '' ?>">Pending</a>
+        <a href="?p=riwayat&status=paid&q=<?= urlencode($search) ?>&sort=<?= $sort_by ?>" class="filter-btn <?= $status_filter == 'paid' ? 'active' : '' ?>">Paid</a>
+        <a href="?p=riwayat&status=cancel&q=<?= urlencode($search) ?>&sort=<?= $sort_by ?>" class="filter-btn <?= $status_filter == 'cancel' ? 'active' : '' ?>">Cancelled</a>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row g-3 mb-5">
+        <?php 
+        $stat_items = [
+            ['primary', 'bi-cart-check', $total_order, 'Total Pesanan', ''],
+            ['success', 'bi-check-circle', $berhasil, 'Terbayar', 'paid'],
+            ['warning', 'bi-hourglass-split', $pending, 'Pending', 'pending'],
+            ['info', 'bi-qr-code', $sudah_checkin, 'Check-in', '']
+        ];
+        foreach($stat_items as $item): ?>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card <?= $item[0] ?> p-3 p-md-4" onclick="window.location.href='?p=riwayat&status=<?= $item[4] ?>'">
+                <i class="bi <?= $item[1] ?>"></i>
+                <div class="h3 fw-bold mb-0"><?= $item[2] ?></div>
+                <div class="small opacity-75 fw-medium"><?= $item[3] ?></div>
             </div>
         </div>
         <?php endforeach; ?>
     </div>
 
-    <!-- Tabs -->
-    <div class="card mb-0">
-        <div class="card-body p-2">
-            <ul class="nav nav-pills nav-fill gap-1" id="riwayatTab" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active py-2" id="order-tab" data-bs-toggle="tab" data-bs-target="#order" type="button"
-                            style="border-radius:var(--r-md);font-weight:600;font-size:.875rem;" onclick="window.location.hash='#order'">
-                        <i class="bi bi-cart me-2"></i>Daftar Pesanan
-                        <span class="badge ms-1" style="background:rgba(255,255,255,.3);border-radius:50px;"><?= $total_data_o ?></span>
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link py-2" id="tiket-tab" data-bs-toggle="tab" data-bs-target="#tiket" type="button"
-                            style="border-radius:var(--r-md);font-weight:600;font-size:.875rem;" onclick="window.location.hash='#tiket'">
-                        <i class="bi bi-ticket-perforated me-2"></i>Tiket Saya
-                        <span class="badge bg-primary ms-1" style="border-radius:50px;"><?= $total_data_t ?></span>
-                    </button>
-                </li>
-            </ul>
-        </div>
+    <!-- Main Navigation Tabs -->
+    <div class="d-flex justify-content-center mb-4">
+        <ul class="nav nav-pills nav-pills-premium" id="riwayatTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="order-tab" data-bs-toggle="tab" data-bs-target="#order" type="button" onclick="window.location.hash='#order'">
+                    <i class="bi bi-receipt me-2"></i>Pesanan
+                    <span class="badge bg-primary-light text-primary ms-2" style="background: rgba(99,102,241,0.1);"><?= $total_data_o ?></span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tiket-tab" data-bs-toggle="tab" data-bs-target="#tiket" type="button" onclick="window.location.hash='#tiket'">
+                    <i class="bi bi-ticket-perforated me-2"></i>Tiket Saya
+                    <span class="badge bg-primary-light text-primary ms-2" style="background: rgba(99,102,241,0.1);"><?= $total_data_t ?></span>
+                </button>
+            </li>
+        </ul>
     </div>
 
-    <div class="tab-content mt-3" id="riwayatTabContent">
+    <div class="tab-content" id="riwayatTabContent">
         <!-- ── Tab Pesanan ── -->
         <div class="tab-pane fade show active" id="order" role="tabpanel">
             <?php if (mysqli_num_rows($query) > 0): ?>
-            <div class="row g-3">
-                <?php while ($row = mysqli_fetch_assoc($query)):
-                    $bc = $row['status']=='paid' ? 'success' : ($row['status']=='pending' ? 'warning' : 'danger');
-                    $icon = $row['status']=='paid' ? 'check-circle-fill' : ($row['status']=='pending' ? 'clock-fill' : 'x-circle-fill');
-                    $bg_color = $row['status']=='paid' ? 'var(--g-success)' : ($row['status']=='pending' ? 'var(--c-warning)' : 'var(--c-danger)');
+            <div class="d-flex flex-column gap-4">
+                <?php 
+                $delay = 0;
+                while ($row = mysqli_fetch_assoc($query)):
+                    $status_class = "badge-" . $row['status'];
                 ?>
-                <div class="col-12">
-                    <div class="card border-0 position-relative" style="border-radius: var(--r-md); overflow:hidden; box-shadow:0 4px 15px rgba(0,0,0,0.05);">
-                        <!-- Status bar left -->
-                        <div style="position:absolute; top:0; left:0; bottom:0; width:8px; background: <?= $bg_color ?>;"></div>
-                        
-                        <div class="card-body p-4" style="padding-left: 1.5rem !important;">
-                            <div class="d-flex flex-wrap justify-content-between align-items-center gap-4">
-                                <div>
-                                    <div class="d-flex align-items-center gap-3 mb-2">
-                                        <span class="badge bg-<?= $bc ?>" style="border-radius:50px; font-weight:600; font-size:0.75rem; padding:0.4rem 0.8rem; color: <?= $bc == 'warning' ? '#000' : '#fff' ?>;">
-                                            <i class="bi bi-<?= $icon ?> me-1"></i> <?= ucfirst($row['status']) ?>
-                                        </span>
-                                        <span class="text-muted" style="font-size:0.85rem; font-weight:600;">
-                                            Order #<?= $row['id_order'] ?> &bull; <?= date('d M Y, H:i', strtotime($row['tanggal_order'])) ?>
+                    <div class="order-card bg-white animate-in" style="animation-delay: <?= $delay ?>s">
+                        <?php $delay += 0.1; ?>
+                        <div class="row g-0">
+                            <div class="col-md-3">
+                                <div class="position-relative h-100" style="min-height: 200px;">
+                                    <img src="<?= $row['gambar'] ? 'uploads/'.$row['gambar'] : 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=500&q=80' ?>" 
+                                         class="w-100 h-100 object-fit-cover" alt="Event"
+                                         onerror="this.src='https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=500&q=80'">
+                                    <div class="position-absolute top-0 start-0 m-3">
+                                        <span class="badge <?= $status_class ?> rounded-pill shadow-sm px-3 py-2 text-uppercase">
+                                            <?= $row['status'] ?>
                                         </span>
                                     </div>
-                                    <h5 class="fw-bold mb-1" style="color:var(--txt);"><?= htmlspecialchars($row['nama_event'] ?? '-') ?></h5>
-                                    <p class="text-muted mb-0" style="font-size:0.9rem;">
-                                        <i class="bi bi-ticket-perforated me-2"></i><?= htmlspecialchars($row['nama_tiket'] ?? '-') ?> <span class="badge bg-secondary ms-1"><?= $row['qty'] ?>x</span>
-                                    </p>
-                                    <?php if ($row['kode_voucher']): ?>
-                                    <div class="mt-2">
-                                        <span class="badge bg-warning text-dark" style="border-radius:50px;">
-                                            <i class="bi bi-tag me-1"></i>Voucher dipakai: <?= $row['kode_voucher'] ?>
-                                        </span>
-                                    </div>
-                                    <?php endif; ?>
                                 </div>
-                                
-                                <div class="text-md-end text-start" style="min-width:180px;">
-                                    <div class="text-muted mb-1" style="font-size:0.75rem; text-transform:uppercase; font-weight:700; letter-spacing:0.5px;">Total Belanja</div>
-                                    <h4 class="fw-bold mb-3" style="color:var(--c-primary);">Rp <?= number_format($row['total'], 0, ',', '.') ?></h4>
-                                    <?php if ($row['status'] === 'pending'): ?>
-                                        <a href="?p=order_bayar&id=<?= $row['id_order'] ?>" class="btn btn-primary w-100" style="border-radius:50px; font-weight:600;">
-                                            <i class="bi bi-wallet2 me-2"></i>Bayar Sekarang
-                                        </a>
-                                    <?php endif; ?>
+                            </div>
+                            <div class="col-md-9 p-4">
+                                <div class="d-flex flex-column flex-md-row justify-content-between gap-3 h-100">
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex align-items-center gap-2 mb-1">
+                                                <div class="text-muted small fw-bold">
+                                                    ORDER <span class="copy-badge bg-light px-2 py-0.5 rounded" onclick="copyToClipboard('#<?= $row['id_order'] ?>', 'ID Order')">#<?= $row['id_order'] ?></span> 
+                                                    • <?= date('d M Y, H:i', strtotime($row['tanggal_order'])) ?>
+                                                </div>
+                                                <?php 
+                                                $is_new = (time() - strtotime($row['tanggal_order'])) < 300; // 5 minutes
+                                                if($is_new): ?>
+                                                    <span class="badge-new">Baru</span>
+                                                <?php endif; ?>
+                                            </div>
+                                            <h5 class="fw-bold mb-2"><?= htmlspecialchars($row['nama_event']) ?></h5>
+                                            <div class="d-flex align-items-center gap-2 mb-3">
+                                                <i class="bi bi-ticket-perforated text-primary"></i>
+                                                <span class="text-muted small"><?= htmlspecialchars($row['nama_tiket']) ?></span>
+                                                <span class="badge bg-light text-dark border"><?= $row['qty'] ?>x</span>
+                                            </div>
+                                            
+                                            <div class="d-flex flex-wrap gap-2">
+                                                <?php if ($row['kode_voucher']): ?>
+                                                <div class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-3 py-1">
+                                                    <i class="bi bi-tag-fill me-1"></i> Promo: <?= $row['kode_voucher'] ?>
+                                                </div>
+                                                <?php endif; ?>
+                                                <div class="badge bg-info-subtle text-info-emphasis border border-info-subtle rounded-pill px-3 py-1">
+                                                    <i class="bi bi-geo-alt-fill me-1"></i> <?= htmlspecialchars($row['nama_venue']) ?>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="text-md-end d-flex flex-column justify-content-between align-items-md-end" style="min-width: 200px;">
+                                            <div>
+                                                <div class="text-muted small fw-medium mb-1">Total Pembayaran</div>
+                                                <div class="h4 fw-bold text-primary mb-3">Rp <?= number_format($row['total'], 0, ',', '.') ?></div>
+                                            </div>
+                                            
+                                            <div class="d-flex gap-2 w-100 justify-content-md-end">
+                                                <button class="btn btn-outline-success rounded-pill px-3" 
+                                                        onclick="shareOrderWhatsApp(<?= htmlspecialchars(json_encode([
+                                                            'id' => $row['id_order'],
+                                                            'event' => $row['nama_event'],
+                                                            'total' => $row['total'],
+                                                            'status' => $row['status']
+                                                        ])) ?>)">
+                                                    <i class="bi bi-whatsapp"></i>
+                                                </button>
+                                                <?php if ($row['status'] === 'pending'): ?>
+                                                    <button class="btn btn-outline-danger rounded-pill px-3" onclick="cancelOrder(<?= $row['id_order'] ?>)">
+                                                        <i class="bi bi-x-circle"></i>
+                                                    </button>
+                                                    <a href="?p=order_bayar&id=<?= $row['id_order'] ?>" class="btn btn-primary rounded-pill px-4 flex-grow-1 flex-md-grow-0">
+                                                        <i class="bi bi-wallet2 me-2"></i>Bayar
+                                                    </a>
+                                                <?php endif; ?>
+                                                <button class="btn btn-outline-secondary rounded-pill px-3 btn-order-detail" 
+                                                        data-order='<?= htmlspecialchars(json_encode([
+                                                            'id' => $row['id_order'],
+                                                            'event' => $row['nama_event'],
+                                                            'tiket' => $row['nama_tiket'],
+                                                            'qty' => $row['qty'],
+                                                            'harga' => $row['harga_tiket'],
+                                                            'potongan' => $row['potongan'] ?? 0,
+                                                            'total' => $row['total'],
+                                                            'status' => $row['status'],
+                                                            'tanggal' => date('d M Y, H:i', strtotime($row['tanggal_order'])),
+                                                            'venue' => $row['nama_venue'],
+                                                            'alamat' => $row['alamat']
+                                                        ]), ENT_QUOTES, 'UTF-8') ?>'>
+                                                    <i class="bi bi-info-circle"></i> Rincian
+                                                </button>
+                                            </div>
+                                        </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
                 <?php endwhile; ?>
             </div>
             
-            <!-- Pagination Pesanan -->
+            <!-- Pagination -->
             <?php if($total_page_o > 1): ?>
-            <nav class="mt-4">
-                <ul class="pagination justify-content-center">
-                    <li class="page-item <?= ($page_o <= 1) ? 'disabled' : '' ?>">
-                        <a class="page-link" href="?p=riwayat&q=<?= urlencode($search) ?>&po=<?= $page_o - 1 ?>&pt=<?= $page_t ?>#order" style="border-radius:50px 0 0 50px;">Prev</a>
-                    </li>
-                    <?php for($i=1; $i<=$total_page_o; $i++): ?>
-                        <li class="page-item <?= ($i == $page_o) ? 'active' : '' ?>">
-                            <a class="page-link" href="?p=riwayat&q=<?= urlencode($search) ?>&po=<?= $i ?>&pt=<?= $page_t ?>#order"><?= $i ?></a>
+            <div class="d-flex justify-content-center mt-5">
+                <nav>
+                    <ul class="pagination pagination-rounded gap-2">
+                        <li class="page-item <?= ($page_o <= 1) ? 'disabled' : '' ?>">
+                            <a class="page-link border-0 shadow-sm" href="?p=riwayat&q=<?= urlencode($search) ?>&status=<?= $status_filter ?>&po=<?= $page_o - 1 ?>&pt=<?= $page_t ?>#order"><i class="bi bi-chevron-left"></i></a>
                         </li>
-                    <?php endfor; ?>
-                    <li class="page-item <?= ($page_o >= $total_page_o) ? 'disabled' : '' ?>">
-                        <a class="page-link" href="?p=riwayat&q=<?= urlencode($search) ?>&po=<?= $page_o + 1 ?>&pt=<?= $page_t ?>#order" style="border-radius:0 50px 50px 0;">Next</a>
-                    </li>
-                </ul>
-            </nav>
+                        <?php for($i=1; $i<=$total_page_o; $i++): ?>
+                            <li class="page-item <?= ($i == $page_o) ? 'active' : '' ?>">
+                                <a class="page-link border-0 shadow-sm" href="?p=riwayat&q=<?= urlencode($search) ?>&status=<?= $status_filter ?>&po=<?= $i ?>&pt=<?= $page_t ?>#order"><?= $i ?></a>
+                            </li>
+                        <?php endfor; ?>
+                        <li class="page-item <?= ($page_o >= $total_page_o) ? 'disabled' : '' ?>">
+                            <a class="page-link border-0 shadow-sm" href="?p=riwayat&q=<?= urlencode($search) ?>&status=<?= $status_filter ?>&po=<?= $page_o + 1 ?>&pt=<?= $page_t ?>#order"><i class="bi bi-chevron-right"></i></a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
             <?php endif; ?>
 
             <?php else: ?>
             <div class="text-center py-5">
-                <div style="width:80px;height:80px;background:var(--g-primary);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
-                    <i class="bi bi-cart-x text-white fs-3"></i>
-                </div>
-                <h5 class="fw-bold mb-1"><?= $search ? 'Pesanan Tidak Ditemukan' : 'Belum Ada Pesanan' ?></h5>
-                <p class="text-muted mb-3" style="font-size:.87rem;"><?= $search ? 'Coba gunakan kata kunci lain.' : 'Mulai jelajahi event dan pesan tiket sekarang!' ?></p>
-                <?php if(!$search): ?>
-                <a href="?p=home" class="btn btn-primary" style="border-radius:50px;">
-                    <i class="bi bi-calendar-event me-2"></i>Lihat Event
-                </a>
-                <?php endif; ?>
+                <img src="https://illustrations.popsy.co/gray/shopping-cart.svg" alt="Empty" style="width: 150px; opacity: 0.5;" class="mb-4">
+                <h5 class="fw-bold">Tidak ada pesanan ditemukan</h5>
+                <p class="text-muted">Coba sesuaikan filter atau kata kunci pencarian kamu.</p>
+                <a href="?p=home" class="btn btn-primary rounded-pill px-4 mt-2">Mulai Cari Event</a>
             </div>
             <?php endif; ?>
         </div>
@@ -235,77 +490,123 @@ $sudah_checkin = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as c FR
         <div class="tab-pane fade" id="tiket" role="tabpanel">
             <?php if (mysqli_num_rows($attendees) > 0): ?>
             <div class="row g-4">
-                <?php while ($tkt = mysqli_fetch_assoc($attendees)):
-                    $done  = ($tkt['status_checkin'] ?? '') == 'sudah';
+                <?php 
+                $delay_t = 0;
+                while ($tkt = mysqli_fetch_assoc($attendees)):
+                    $is_done = ($tkt['status_checkin'] ?? '') == 'sudah';
                     $is_paid = $tkt['status'] == 'paid';
-                    $hdr_g = !$is_paid ? 'var(--c-warning)' : ($done ? 'var(--g-success)' : 'var(--g-primary)');
+                    
+                    // Countdown Logic
+                    $event_date = strtotime($tkt['tanggal']);
+                    $now = time();
+                    $diff = $event_date - $now;
+                    $days_left = ceil($diff / (60 * 60 * 24));
                 ?>
-                <div class="col-md-6 col-lg-4">
-                    <div class="card h-100 ticket-card position-relative" style="border:none; border-radius:var(--r-lg); box-shadow:0 10px 30px rgba(0,0,0,0.08); overflow:hidden;">
-                        <!-- Ticket header -->
-                        <div style="background:<?= $hdr_g ?>;padding:1.5rem;color:#fff;position:relative;">
-                            <div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;background:rgba(255,255,255,.15);border-radius:50%;"></div>
-                            <div style="position:absolute;bottom:-20px;left:-20px;width:80px;height:80px;background:rgba(255,255,255,.1);border-radius:50%;"></div>
-                            <div class="d-flex justify-content-between align-items-start position-relative" style="z-index:2;">
-                                <div>
-                                    <div style="font-size:.7rem;opacity:.9;text-transform:uppercase;letter-spacing:1px;margin-bottom:.3rem; font-weight:700;">Tiket Akses</div>
-                                    <h5 class="fw-bold mb-0 text-white" style="text-shadow:0 2px 4px rgba(0,0,0,0.2);"><?= htmlspecialchars($tkt['nama_tiket']) ?></h5>
-                                </div>
-                                <div style="background:rgba(255,255,255,0.2); padding:0.5rem; border-radius:12px; backdrop-filter:blur(5px);">
-                                    <?php if($is_paid): ?>
-                                        <i class="bi bi-<?= $done ? 'check-circle-fill' : 'qr-code-scan' ?>" style="font-size:1.8rem; line-height:1;"></i>
-                                    <?php else: ?>
-                                        <i class="bi bi-lock-fill" style="font-size:1.8rem; line-height:1;"></i>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Divider / Cutout -->
-                        <div style="position:relative; height:20px; background:#fff; overflow:hidden;">
-                            <div style="position:absolute; top:10px; left:15px; right:15px; border-top:2px dashed #cbd5e1;"></div>
-                            <div style="position:absolute; top:-10px; left:-10px; width:20px; height:20px; background:var(--bg); border-radius:50%; box-shadow:inset -2px 0 5px rgba(0,0,0,0.05);"></div>
-                            <div style="position:absolute; top:-10px; right:-10px; width:20px; height:20px; background:var(--bg); border-radius:50%; box-shadow:inset 2px 0 5px rgba(0,0,0,0.05);"></div>
-                        </div>
-
-                        <!-- Ticket body -->
-                        <div class="card-body p-4 bg-white" style="position:relative;">
-                            <h6 class="fw-bold mb-2 lh-base" style="color:var(--txt);"><?= htmlspecialchars($tkt['nama_event']) ?></h6>
-                            <div class="text-muted mb-4" style="font-size:.85rem; font-weight:500;">
-                                <i class="bi bi-calendar3 me-2" style="color:var(--c-primary);"></i><?= date('d F Y', strtotime($tkt['tanggal'])) ?>
-                            </div>
+                <div class="col-md-6 col-xl-4 animate-in" style="animation-delay: <?= $delay_t ?>s">
+                    <?php $delay_t += 0.1; ?>
+                    <div class="ticket-stub h-100 overflow-hidden d-flex flex-column">
+                        <!-- Top Image Part -->
+                        <div style="height: 140px; position: relative;">
+                            <img src="<?= $tkt['gambar'] ? 'uploads/'.$tkt['gambar'] : 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=500&q=80' ?>" 
+                                 class="w-100 h-100 object-fit-cover" alt="Event"
+                                 onerror="this.src='https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=500&q=80'">
                             
-                            <!-- QR Code area / Barcode visual -->
-                            <div class="p-3 mb-4 text-center" style="background:#f8fafc;border-radius:var(--r-md); border:1px dashed #cbd5e1;">
-                                <?php if ($tkt['status'] === 'paid'): ?>
-                                    <div style="font-size:.68rem;color:var(--txt-muted);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:.3rem;">KODE TIKET</div>
-                                    <div class="ticket-code fw-bold fs-4 mb-3" style="color:var(--c-primary); letter-spacing:2px; font-family:monospace;"><?= $tkt['kode_tiket'] ?></div>
-                                    
-                                    <a href="?p=tiket_print&kode=<?= $tkt['kode_tiket'] ?>" target="_blank" class="btn btn-primary w-100" style="border-radius:50px; font-weight:600; box-shadow:0 4px 10px rgba(99,102,241,0.3);">
-                                        <i class="bi bi-printer me-2"></i>Buka & Cetak PDF
-                                    </a>
-                                <?php else: ?>
-                                    <div style="font-size:.68rem;color:var(--c-warning);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:.3rem;">TIKET BELUM AKTIF</div>
-                                    <div class="mb-3 px-2">
-                                        <p class="text-muted mb-0" style="font-size: 0.8rem; line-height: 1.4;">Bayar terlebih dahulu untuk mendapatkan kode tiket & barcode</p>
+                            <div class="position-absolute top-0 start-0 m-3">
+                                <?php if($days_left > 0): ?>
+                                    <div class="countdown-box shadow-sm">
+                                        <i class="bi bi-hourglass-split me-1"></i><?= $days_left ?> Hari Lagi
                                     </div>
-                                    
-                                    <a href="?p=order_bayar&id=<?= $tkt['id_order'] ?>" class="btn btn-warning w-100" style="border-radius:50px; font-weight:600; color: #000;">
-                                        <i class="bi bi-wallet2 me-2"></i>Bayar Sekarang
-                                    </a>
+                                <?php elseif($days_left == 0): ?>
+                                    <div class="countdown-box shadow-sm bg-danger">
+                                        <i class="bi bi-fire me-1"></i>Hari Ini!
+                                    </div>
                                 <?php endif; ?>
                             </div>
-                            
-                            <!-- Status -->
-                            <div class="d-flex justify-content-between align-items-center bg-light p-2 rounded-pill px-3">
-                                <span class="badge <?= $done ? 'text-success' : 'text-warning' ?> p-0" style="font-size:0.8rem; background:transparent;">
-                                    <i class="bi bi-<?= $done ? 'check-circle-fill' : 'clock-fill' ?> me-1"></i>
-                                    <?= $done ? 'Sudah Check-in' : 'Menunggu Check-in' ?>
-                                </span>
-                                <?php if ($done && $tkt['waktu_checkin']): ?>
-                                    <small class="text-muted fw-bold" style="font-size:.7rem;">
-                                        <?= date('d M H:i', strtotime($tkt['waktu_checkin'])) ?>
-                                    </small>
+
+                            <div class="position-absolute top-0 end-0 m-3">
+                                <?php if($is_paid): ?>
+                                    <span class="badge bg-white text-primary rounded-pill shadow-sm px-3 py-2">
+                                        <i class="bi bi-check-circle-fill me-1"></i>Aktif
+                                    </span>
+                                <?php else: ?>
+                                    <span class="badge bg-danger text-white rounded-pill shadow-sm px-3 py-2">
+                                        <i class="bi bi-lock-fill me-1"></i>Belum Bayar
+                                    </span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
+                        <!-- Ticket Body -->
+                        <div class="p-4 pt-3 flex-grow-1 position-relative">
+                            <div class="ticket-cutout-left"></div>
+                            <div class="ticket-cutout-right"></div>
+                            <div class="ticket-dash"></div>
+
+                            <div class="mb-4">
+                                <div class="text-primary fw-bold small text-uppercase mb-1" style="letter-spacing: 1px;"><?= htmlspecialchars($tkt['nama_tiket']) ?></div>
+                                <h5 class="fw-bold mb-3 text-truncate" title="<?= htmlspecialchars($tkt['nama_event']) ?>"><?= htmlspecialchars($tkt['nama_event']) ?></h5>
+                                
+                                <div class="d-flex align-items-start gap-3 mb-3">
+                                    <div class="bg-light rounded p-2 text-center" style="min-width: 50px;">
+                                        <div class="fw-bold lh-1"><?= date('d', strtotime($tkt['tanggal'])) ?></div>
+                                        <div class="small text-muted" style="font-size: 0.65rem;"><?= date('M', strtotime($tkt['tanggal'])) ?></div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="small fw-bold text-dark"><i class="bi bi-geo-alt text-danger me-1"></i> <?= htmlspecialchars($tkt['nama_venue']) ?></div>
+                                        <div class="small text-muted text-truncate" style="max-width: 180px;"><?= htmlspecialchars($tkt['alamat']) ?></div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-outline-success rounded-pill px-3" 
+                                            onclick="shareTicketWhatsApp('<?= $tkt['kode_tiket'] ?>', '<?= addslashes($tkt['nama_event']) ?>', '<?= date('d M Y', strtotime($tkt['tanggal'])) ?>')">
+                                        <i class="bi bi-whatsapp"></i>
+                                    </button>
+                                    <a href="https://www.google.com/maps/search/?api=1&query=<?= urlencode($tkt['nama_venue'] . ' ' . $tkt['alamat']) ?>" 
+                                       target="_blank" class="btn btn-sm btn-outline-primary rounded-pill flex-grow-1">
+                                        <i class="bi bi-map me-1"></i> Lokasi
+                                    </a>
+                                    <a href="https://www.google.com/calendar/render?action=TEMPLATE&text=<?= urlencode($tkt['nama_event']) ?>&dates=<?= date('Ymd\THis\Z', strtotime($tkt['tanggal'])) ?>/<?= date('Ymd\THis\Z', strtotime($tkt['tanggal'] . ' +3 hours')) ?>&details=Tiket+Anda:+<?= $tkt['kode_tiket'] ?>&location=<?= urlencode($tkt['nama_venue']) ?>" 
+                                       target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill">
+                                        <i class="bi bi-calendar-plus"></i>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="bg-light rounded-4 p-3 text-center border border-dashed">
+                                <?php if ($is_paid): ?>
+                                    <div class="small text-muted text-uppercase fw-bold mb-2" style="font-size: 0.65rem; letter-spacing: 2px;">Kode Tiket</div>
+                                    <div class="h4 fw-bold font-monospace text-primary mb-3 copy-badge rounded" onclick="copyToClipboard('<?= $tkt['kode_tiket'] ?>', 'Kode Tiket')"><?= $tkt['kode_tiket'] ?></div>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-outline-primary flex-grow-1 rounded-pill" onclick="showQuickBarcode('<?= $tkt['kode_tiket'] ?>', '<?= addslashes($tkt['nama_event']) ?>')">
+                                            <i class="bi bi-qr-code me-2"></i>Quick Scan
+                                        </button>
+                                        <a href="?p=tiket_print&kode=<?= $tkt['kode_tiket'] ?>" target="_blank" class="btn btn-primary rounded-pill px-3 shadow-sm">
+                                            <i class="bi bi-printer"></i>
+                                        </a>
+                                    </div>
+                                <?php else: ?>
+                                    <div class="py-3">
+                                        <p class="small text-muted mb-3">Selesaikan pembayaran untuk mengaktifkan tiket ini.</p>
+                                        <a href="?p=order_bayar&id=<?= $tkt['id_order'] ?>" class="btn btn-warning w-100 rounded-pill py-2">
+                                            <i class="bi bi-wallet2 me-2"></i>Bayar Sekarang
+                                        </a>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
+                        <!-- Ticket Footer -->
+                        <div class="px-4 pb-4 mt-n2">
+                            <div class="d-flex justify-content-between align-items-center bg-white border rounded-pill px-3 py-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="dot <?= $is_done ? 'bg-success' : 'bg-warning' ?>" style="width: 8px; height: 8px; border-radius: 50%;"></div>
+                                    <span class="small fw-medium text-muted"><?= $is_done ? 'Sudah Digunakan' : 'Siap Digunakan' ?></span>
+                                </div>
+                                <?php if($is_done): ?>
+                                    <div class="small text-muted" style="font-size: 0.65rem;"><?= date('d M, H:i', strtotime($tkt['waktu_checkin'])) ?></div>
+                                <?php else: ?>
+                                    <i class="bi bi-qr-code-scan text-muted"></i>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -316,43 +617,228 @@ $sudah_checkin = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as c FR
 
             <!-- Pagination Tiket -->
             <?php if($total_page_t > 1): ?>
-            <nav class="mt-4">
-                <ul class="pagination justify-content-center">
-                    <li class="page-item <?= ($page_t <= 1) ? 'disabled' : '' ?>">
-                        <a class="page-link" href="?p=riwayat&q=<?= urlencode($search) ?>&pt=<?= $page_t - 1 ?>&po=<?= $page_o ?>#tiket" style="border-radius:50px 0 0 50px;">Prev</a>
-                    </li>
-                    <?php for($i=1; $i<=$total_page_t; $i++): ?>
-                        <li class="page-item <?= ($i == $page_t) ? 'active' : '' ?>">
-                            <a class="page-link" href="?p=riwayat&q=<?= urlencode($search) ?>&pt=<?= $i ?>&po=<?= $page_o ?>#tiket"><?= $i ?></a>
+            <div class="d-flex justify-content-center mt-5">
+                <nav>
+                    <ul class="pagination pagination-rounded gap-2">
+                        <li class="page-item <?= ($page_t <= 1) ? 'disabled' : '' ?>">
+                            <a class="page-link border-0 shadow-sm" href="?p=riwayat&q=<?= urlencode($search) ?>&status=<?= $status_filter ?>&pt=<?= $page_t - 1 ?>&po=<?= $page_o ?>#tiket"><i class="bi bi-chevron-left"></i></a>
                         </li>
-                    <?php endfor; ?>
-                    <li class="page-item <?= ($page_t >= $total_page_t) ? 'disabled' : '' ?>">
-                        <a class="page-link" href="?p=riwayat&q=<?= urlencode($search) ?>&pt=<?= $page_t + 1 ?>&po=<?= $page_o ?>#tiket" style="border-radius:0 50px 50px 0;">Next</a>
-                    </li>
-                </ul>
-            </nav>
+                        <?php for($i=1; $i<=$total_page_t; $i++): ?>
+                            <li class="page-item <?= ($i == $page_t) ? 'active' : '' ?>">
+                                <a class="page-link border-0 shadow-sm" href="?p=riwayat&q=<?= urlencode($search) ?>&status=<?= $status_filter ?>&pt=<?= $i ?>&po=<?= $page_o ?>#tiket"><?= $i ?></a>
+                            </li>
+                        <?php endfor; ?>
+                        <li class="page-item <?= ($page_t >= $total_page_t) ? 'disabled' : '' ?>">
+                            <a class="page-link border-0 shadow-sm" href="?p=riwayat&q=<?= urlencode($search) ?>&status=<?= $status_filter ?>&pt=<?= $page_t + 1 ?>&po=<?= $page_o ?>#tiket"><i class="bi bi-chevron-right"></i></a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
             <?php endif; ?>
 
             <?php else: ?>
             <div class="text-center py-5">
-                <div style="width:80px;height:80px;background:var(--g-primary);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
-                    <i class="bi bi-ticket-perforated text-white fs-3"></i>
-                </div>
-                <h5 class="fw-bold mb-1"><?= $search ? 'Tiket Tidak Ditemukan' : 'Belum Memiliki Tiket' ?></h5>
-                <p class="text-muted mb-3" style="font-size:.87rem;"><?= $search ? 'Coba gunakan kata kunci lain.' : 'Pesan tiket untuk event favoritmu!' ?></p>
-                <?php if(!$search): ?>
-                <a href="?p=home" class="btn btn-primary" style="border-radius:50px;">
-                    <i class="bi bi-calendar-event me-2"></i>Jelajahi Event
-                </a>
-                <?php endif; ?>
+                <img src="https://illustrations.popsy.co/gray/ticket.svg" alt="Empty" style="width: 150px; opacity: 0.5;" class="mb-4">
+                <h5 class="fw-bold">Tidak ada tiket ditemukan</h5>
+                <p class="text-muted">Coba sesuaikan filter atau kata kunci pencarian kamu.</p>
+                <a href="?p=home" class="btn btn-primary rounded-pill px-4 mt-2">Cari Event Seru</a>
             </div>
             <?php endif; ?>
         </div>
     </div>
 </div>
 
+<!-- Load JsBarcode Library -->
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+
 <script>
+function copyToClipboard(text, label) {
+    navigator.clipboard.writeText(text.replace('#', '')).then(() => {
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true
+        });
+        Toast.fire({
+            icon: 'success',
+            title: `${label} berhasil disalin!`
+        });
+    });
+}
+
+function cancelOrder(id) {
+    Swal.fire({
+        title: 'Batalkan Pesanan?',
+        text: "Pesanan yang dibatalkan tidak dapat dikembalikan dan kuota tiket akan dilepas.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Ya, Batalkan!',
+        cancelButtonText: 'Tutup',
+        reverseButtons: true,
+        customClass: {
+            confirmButton: 'rounded-pill px-4',
+            cancelButton: 'rounded-pill px-4'
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const formData = new FormData();
+            formData.append('action', 'cancel_order');
+            formData.append('id_order', id);
+
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    Swal.fire({
+                        title: 'Dibatalkan!',
+                        text: data.message,
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            });
+        }
+    });
+}
+
+function shareOrderWhatsApp(data) {
+    const text = `Halo! Berikut detail pesanan saya di YuiPass:%0A%0A` +
+                 `*Order ID:* #${data.id}%0A` +
+                 `*Event:* ${data.event}%0A` +
+                 `*Total:* Rp ${new Intl.NumberFormat('id-ID').format(data.total)}%0A` +
+                 `*Status:* ${data.status.toUpperCase()}%0A%0A` +
+                 `Cek detailnya di platform YuiPass ya!`;
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+}
+
+function shareTicketWhatsApp(kode, event, tanggal) {
+    const text = `Halo! Ini kode tiket saya untuk event *${event}* (${tanggal}):%0A%0A` +
+                 `*KODE TIKET:* ${kode}%0A%0A` +
+                 `Sampai jumpa di lokasi!`;
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+}
+
+function showQuickBarcode(kode, event) {
+    Swal.fire({
+        title: 'Quick Scan Tiket',
+        html: `
+            <div class="text-center p-3">
+                <div class="fw-bold mb-3">${event}</div>
+                <div class="bg-white p-4 rounded-4 border border-dashed mb-3" style="display:inline-block;">
+                    <svg id="quick-barcode"></svg>
+                </div>
+                <div class="h4 fw-bold font-monospace text-primary" style="letter-spacing: 4px;">${kode}</div>
+                <p class="text-muted small mt-3 mb-0">Tunjukkan barcode ini kepada petugas di pintu masuk.</p>
+            </div>
+        `,
+        showConfirmButton: false,
+        showCloseButton: true,
+        didOpen: () => {
+            JsBarcode("#quick-barcode", kode, {
+                format: "CODE128",
+                lineColor: "#000",
+                width: 2,
+                height: 80,
+                displayValue: false,
+                margin: 0
+            });
+        }
+    });
+}
+
+function showOrderDetail(data) {
+    const formatRp = (num) => 'Rp ' + new Intl.NumberFormat('id-ID').format(num);
+    
+    let html = `
+        <div class="text-start" style="font-size: 0.9rem;">
+            <div class="mb-4 p-3 rounded bg-light border">
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="text-muted">No. Pesanan</span>
+                    <span class="fw-bold">#${data.id}</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span class="text-muted">Waktu Transaksi</span>
+                    <span>${data.tanggal}</span>
+                </div>
+            </div>
+            
+            <h6 class="fw-bold mb-2">Item Pesanan</h6>
+            <div class="mb-4">
+                <div class="fw-bold text-dark">${data.event}</div>
+                <div class="d-flex justify-content-between text-muted">
+                    <span>${data.tiket} (x${data.qty})</span>
+                    <span>${formatRp(data.harga * data.qty)}</span>
+                </div>
+            </div>
+            
+            <h6 class="fw-bold mb-2">Rincian Pembayaran</h6>
+            <div class="mb-4">
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="text-muted">Harga Tiket (x${data.qty})</span>
+                    <span>${formatRp(data.harga * data.qty)}</span>
+                </div>
+                ${data.potongan > 0 ? `
+                <div class="d-flex justify-content-between mb-1 text-success">
+                    <span>Diskon Voucher</span>
+                    <span>- ${formatRp(data.potongan)}</span>
+                </div>
+                ` : ''}
+                <div class="d-flex justify-content-between mt-2 pt-2 border-top">
+                    <span class="fw-bold">Total Bayar</span>
+                    <span class="fw-bold text-primary fs-5">${formatRp(data.total)}</span>
+                </div>
+            </div>
+            
+            <h6 class="fw-bold mb-2">Informasi Venue</h6>
+            <div class="mb-0">
+                <div class="fw-bold text-dark"><i class="bi bi-geo-alt-fill text-danger me-1"></i>${data.venue}</div>
+                <div class="text-muted small">${data.alamat}</div>
+            </div>
+        </div>
+    `;
+
+    Swal.fire({
+        title: 'Detail Transaksi',
+        html: html,
+        showCloseButton: true,
+        showConfirmButton: data.status === 'pending',
+        confirmButtonText: '<i class="bi bi-wallet2 me-2"></i>Bayar Sekarang',
+        confirmButtonColor: '#6366f1',
+        cancelButtonText: 'Tutup',
+        showCancelButton: true,
+        buttonsStyling: true,
+        customClass: {
+            confirmButton: 'rounded-pill px-4',
+            cancelButton: 'rounded-pill px-4'
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = '?p=order_bayar&id=' + data.id;
+        }
+    });
+}
+
 document.addEventListener("DOMContentLoaded", function() {
+    // Detail button listener
+    document.querySelectorAll('.btn-order-detail').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const data = JSON.parse(this.getAttribute('data-order'));
+            showOrderDetail(data);
+        });
+    });
+
     // Preserve tab on reload or navigation
     let hash = window.location.hash;
     if (hash) {

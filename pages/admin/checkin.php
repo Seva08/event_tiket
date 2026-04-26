@@ -4,8 +4,8 @@ $message = '';
 $alert_class = '';
 
 if (isset($_POST['proses_checkin'])) {
-    $kode = mysqli_real_escape_string($conn, $_POST['kode_tiket']);
-    $cek  = mysqli_query($conn, "SELECT a.*, u.nama, e.nama_event, e.tanggal, t.nama_tiket 
+    $kode = mysqli_real_escape_string($conn, trim($_POST['kode_tiket']));
+    $cek  = mysqli_query($conn, "SELECT a.*, u.nama, e.nama_event, e.tanggal, t.nama_tiket, o.status as order_status
                                 FROM attendee a 
                                 JOIN order_detail od ON a.id_detail = od.id_detail 
                                 JOIN orders o ON od.id_order = o.id_order 
@@ -19,17 +19,25 @@ if (isset($_POST['proses_checkin'])) {
         $today = date('Y-m-d');
         $event_date = date('Y-m-d', strtotime($data['tanggal']));
         
-        if ($event_date != $today) {
+        // Cek status pembayaran (mendukung 'success' atau 'paid')
+        $status_lunas = ['success', 'paid'];
+        if (!in_array(strtolower($data['order_status']), $status_lunas)) {
             $_SESSION['alert'] = [
                 'type' => 'error',
-                'title' => 'Gagal Check-in',
-                'text' => 'Event ini dijadwalkan pada ' . date('d M Y', strtotime($data['tanggal'])) . ', bukan hari ini.'
+                'title' => 'Pembayaran Belum Valid',
+                'text' => 'Tiket ini tidak bisa digunakan karena status pesanan masih: ' . strtoupper($data['order_status'])
             ];
         } elseif ($data['status_checkin'] == 'sudah') { 
             $_SESSION['alert'] = [
                 'type' => 'warning',
                 'title' => 'Sudah Check-in',
-                'text' => 'Tiket ini sudah digunakan pada: ' . $data['waktu_checkin']
+                'text' => 'Tiket ini sudah pernah digunakan pada: ' . date('d M Y H:i', strtotime($data['waktu_checkin']))
+            ];
+        } elseif ($event_date != $today) {
+            $_SESSION['alert'] = [
+                'type' => 'warning',
+                'title' => 'Beda Tanggal Event',
+                'text' => 'Event ini dijadwalkan tanggal ' . date('d M Y', strtotime($data['tanggal'])) . '. Sekarang tanggal ' . date('d M Y') . '.'
             ];
         } else { 
             mysqli_query($conn, "UPDATE attendee SET status_checkin='sudah', waktu_checkin=NOW() WHERE kode_tiket='$kode'"); 
@@ -69,23 +77,37 @@ unset($_SESSION['last_checkin_admin']);
                 <div class="card border-0 shadow" style="border-radius: var(--r-lg, 16px); overflow: hidden;">
                     <div class="card-header bg-primary text-white text-center py-4" style="border: none;">
                         <div class="bg-white bg-opacity-25 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 70px; height: 70px;">
-                            <i class="bi bi-qr-code-scan fs-1"></i>
+                            <i class="bi bi-upc-scan fs-1"></i>
                         </div>
                         <h4 class="mb-0 fw-bold">Proses Check-in</h4>
                     </div>
                     <div class="card-body p-4 bg-light">
 
-                        <form method="POST" class="mt-2">
+                        <!-- Camera Scan Button & Container -->
+                        <div class="text-center mb-4">
+                            <button type="button" id="btnToggleCamera" class="btn btn-outline-primary rounded-pill px-4 py-2 fw-bold shadow-sm">
+                                <i class="bi bi-camera me-2"></i> Buka Kamera Scan
+                            </button>
+                            <div id="reader-container" class="mt-3 d-none">
+                                <div id="reader" style="width: 100%; max-width: 400px; margin: 0 auto; border-radius: 12px; overflow: hidden; border: 3px solid var(--g-primary);"></div>
+                                <button type="button" id="btnStopCamera" class="btn btn-sm btn-danger mt-2 rounded-pill px-3">
+                                    <i class="bi bi-x-circle me-1"></i> Tutup Kamera
+                                </button>
+                            </div>
+                        </div>
+
+                        <form method="POST" class="mt-2" id="checkinForm">
+                            <input type="hidden" name="proses_checkin" value="1">
                             <div class="mb-4">
                                 <label class="form-label fw-bold text-muted text-uppercase" style="font-size: 0.85rem; letter-spacing: 0.5px;">Masukkan Kode Tiket</label>
                                 <div class="input-group input-group-lg" style="box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-radius: var(--r-md, 8px); overflow: hidden;">
                                     <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-upc-scan"></i></span>
-                                    <input type="text" name="kode_tiket" class="form-control border-start-0 ps-0 fw-bold text-uppercase" placeholder="Contoh: TKT-ABCD1234" required autofocus style="box-shadow: none;">
-                                    <button class="btn btn-primary fw-bold px-4" type="submit" name="proses_checkin">
+                                    <input type="text" name="kode_tiket" id="kode_tiket" class="form-control border-start-0 ps-0 fw-bold text-uppercase" placeholder="Contoh: TKT-ABCD1234" required autofocus style="box-shadow: none;">
+                                    <button class="btn btn-primary fw-bold px-4" type="submit">
                                         <i class="bi bi-check-lg me-1"></i> Check-in
                                     </button>
                                 </div>
-                                <div class="form-text mt-2"><i class="bi bi-info-circle me-1"></i>Pastikan kode tiket sesuai dengan yang tertera pada e-tiket pengunjung.</div>
+                                <div class="form-text mt-2"><i class="bi bi-info-circle me-1"></i>Gunakan kamera, hardware scanner, atau ketik kode manual.</div>
                             </div>
                         </form>
 
@@ -136,33 +158,80 @@ unset($_SESSION['last_checkin_admin']);
     </main>
 </div></div>
 
+<!-- Library HTML5 QR Code -->
+<script src="https://unpkg.com/html5-qrcode"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const input = document.querySelector('input[name="kode_tiket"]');
+    const input = document.getElementById('kode_tiket');
+    const form = document.getElementById('checkinForm');
     if (!input) return;
 
-    // Selalu fokus ke input kode tiket
+    // Selalu fokus ke input agar siap scan kapan saja (untuk hardware scanner)
     input.focus();
-    
-    // Jika user klik di mana saja, kembalikan fokus ke input (untuk memudahkan scan terus menerus)
-    document.addEventListener('click', function() {
+    document.addEventListener('click', (e) => {
+        // Jangan auto-focus jika sedang pakai kamera
+        if (!document.getElementById('reader-container').classList.contains('d-none')) return;
         input.focus();
     });
 
-    // Fungsi Auto Enter / Auto Submit
+    // Auto Submit Logic (Untuk Hardware Scanner)
     let scanTimer;
     input.addEventListener('input', function() {
-        // Bersihkan timer sebelumnya
         clearTimeout(scanTimer);
-        
-        // Kode tiket kita formatnya TKT-XXXXXXXX (12 karakter)
-        // Jika panjang input mencapai 12, otomatis klik tombol check-in
-        if (this.value.length >= 12) {
+        if (this.value.length >= 10) {
             scanTimer = setTimeout(() => {
-                const btn = document.querySelector('button[name="proses_checkin"]');
-                if (btn) btn.click();
-            }, 100); // Delay kecil untuk memastikan scanner selesai input
+                form.submit();
+            }, 300);
         }
     });
+
+    // Logic Kamera Scan
+    const btnToggle = document.getElementById('btnToggleCamera');
+    const btnStop = document.getElementById('btnStopCamera');
+    const readerContainer = document.getElementById('reader-container');
+    let html5QrCode;
+
+    btnToggle.addEventListener('click', function() {
+        readerContainer.classList.remove('d-none');
+        btnToggle.classList.add('d-none');
+        
+        html5QrCode = new Html5Qrcode("reader");
+        const config = { fps: 10, qrbox: { width: 250, height: 150 } };
+
+        // Start scanning
+        html5QrCode.start(
+            { facingMode: "environment" }, 
+            config, 
+            (decodedText) => {
+                // Berhasil Scan
+                input.value = decodedText;
+                if (navigator.vibrate) navigator.vibrate(100);
+                
+                html5QrCode.stop().then(() => {
+                    form.submit();
+                });
+            },
+            (errorMessage) => { }
+        ).catch((err) => {
+            console.error("Gagal memulai kamera:", err);
+            Swal.fire('Error Kamera', 'Pastikan izin kamera sudah diberikan dan gunakan HTTPS.', 'error');
+            stopCamera();
+        });
+    });
+
+    function stopCamera() {
+        if (html5QrCode && html5QrCode.isScanning) {
+            html5QrCode.stop().then(() => {
+                readerContainer.classList.add('d-none');
+                btnToggle.classList.remove('d-none');
+            });
+        } else {
+            readerContainer.classList.add('d-none');
+            btnToggle.classList.remove('d-none');
+        }
+    }
+
+    btnStop.addEventListener('click', stopCamera);
 });
 </script>

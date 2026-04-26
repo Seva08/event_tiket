@@ -49,14 +49,14 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
-                                    <p class="card-text mb-1 opacity-75"><i class="bi bi-cart me-2"></i>Total Order</p>
+                                    <p class="card-text mb-1 opacity-75"><i class="bi bi-cart me-2"></i>Order Lunas</p>
                                     <h2 class="mb-0 fw-bold">
                                         <?php
-                                        $total_order = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM orders"))['total'];
+                                        $total_order = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM orders WHERE status='paid'"))['total'];
                                         echo $total_order;
                                         ?>
                                     </h2>
-                                    <small class="opacity-75">Transaksi masuk</small>
+                                    <small class="opacity-75">Pesanan sukses</small>
                                 </div>
                                 <div class="bg-white bg-opacity-25 rounded-circle p-3">
                                     <i class="bi bi-cart fs-2"></i>
@@ -230,9 +230,10 @@
                             </thead>
                             <tbody>
                                 <?php
-                                $res = mysqli_query($conn, "SELECT orders.*, users.nama FROM orders JOIN users ON orders.id_user = users.id_user ORDER BY tanggal_order DESC LIMIT 5");
+                                // Menampilkan hanya transaksi lunas terbaru
+                                $res = mysqli_query($conn, "SELECT orders.*, users.nama FROM orders JOIN users ON orders.id_user = users.id_user WHERE status='paid' ORDER BY tanggal_order DESC LIMIT 5");
                                 while ($row = mysqli_fetch_assoc($res)):
-                                    $badge_class = $row['status'] == 'paid' ? 'success' : ($row['status'] == 'pending' ? 'warning' : 'danger');
+                                    $badge_class = 'success';
                                 ?>
                                     <tr>
                                         <td>#<?= $row['id_order'] ?></td>

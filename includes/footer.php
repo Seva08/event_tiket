@@ -63,6 +63,35 @@
 .hover-primary:hover { color: var(--c-primary) !important; }
 </style>
 
+<!-- Audio for Scanning -->
+<audio id="sound-success" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3" preload="auto"></audio>
+<audio id="sound-error" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3" preload="auto"></audio>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+// Global Alert Handler
+<?php if (isset($_SESSION['alert'])): ?>
+    Swal.fire({
+        icon: '<?= $_SESSION['alert']['type'] ?>',
+        title: '<?= $_SESSION['alert']['title'] ?>',
+        text: '<?= $_SESSION['alert']['text'] ?>',
+        timer: <?= $_SESSION['alert']['type'] == 'success' ? 2000 : 4000 ?>,
+        showConfirmButton: <?= $_SESSION['alert']['type'] == 'success' ? 'false' : 'true' ?>,
+        timerProgressBar: true
+    });
+    
+    // Play sound based on alert type
+    document.addEventListener('DOMContentLoaded', function() {
+        const type = '<?= $_SESSION['alert']['type'] ?>';
+        if (type === 'success') {
+            document.getElementById('sound-success').play().catch(e => console.log('Audio play blocked'));
+        } else if (type === 'error' || type === 'warning') {
+            document.getElementById('sound-error').play().catch(e => console.log('Audio play blocked'));
+        }
+    });
+    <?php unset($_SESSION['alert']); ?>
+<?php endif; ?>
+</script>
 </body>
 </html>

@@ -9,9 +9,10 @@ if (!$data) {
 }
 
 if (isset($_POST['update'])) {
-    $nama_event = mysqli_real_escape_string($conn, $_POST['nama_event']);
-    $tanggal    = $_POST['tanggal'];
-    $id_venue   = (int)$_POST['id_venue'];
+    $nama_event  = mysqli_real_escape_string($conn, $_POST['nama_event']);
+    $tanggal     = $_POST['tanggal'];
+    $id_venue    = (int)$_POST['id_venue'];
+    $limit_tiket = (int)$_POST['limit_tiket'];
     
     $q_bentrok = mysqli_query($conn, "SELECT nama_event FROM event WHERE id_venue = '$id_venue' AND tanggal = '$tanggal' AND id_event != $id_event");
     if (mysqli_num_rows($q_bentrok) > 0) {
@@ -40,7 +41,7 @@ if (isset($_POST['update'])) {
         }
 
         if ($upload_ok) {
-            $update = mysqli_query($conn, "UPDATE event SET nama_event='$nama_event', tanggal='$tanggal', id_venue=$id_venue $gambar_query WHERE id_event=$id_event");
+            $update = mysqli_query($conn, "UPDATE event SET nama_event='$nama_event', tanggal='$tanggal', id_venue=$id_venue, limit_tiket=$limit_tiket $gambar_query WHERE id_event=$id_event");
             if ($update) {
                 $_SESSION['alert'] = ['type' => 'success', 'title' => 'Berhasil!', 'text' => 'Data event telah diperbarui.'];
                 header("Location: ?p=admin_event");
@@ -115,6 +116,15 @@ $json_events = json_encode($all_events);
                                             </select>
                                         </div>
                                     </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold small text-uppercase opacity-75">Limit Tiket Per User</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-0"><i class="bi bi-shield-lock"></i></span>
+                                        <input type="number" name="limit_tiket" class="form-control form-control-lg border-0 bg-light" value="<?= $data['limit_tiket'] ?>" min="1" required style="border-radius: 0 12px 12px 0;">
+                                    </div>
+                                    <div class="form-text mt-2"><i class="bi bi-info-circle me-1"></i>Berapa maksimal tiket yang bisa dibeli oleh satu akun untuk event ini?</div>
                                 </div>
 
                                 <div class="mb-5">

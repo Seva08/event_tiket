@@ -20,7 +20,7 @@ $id_user = $_SESSION['id_user'];
 
 // Ambil detail tiket & event
 $q_tiket = mysqli_query($conn, 
-    "SELECT t.*, e.nama_event, e.tanggal, e.gambar, v.nama_venue, v.alamat 
+    "SELECT t.*, e.nama_event, e.tanggal, e.gambar, e.limit_tiket, v.nama_venue, v.alamat 
      FROM tiket t 
      JOIN event e ON t.id_event = e.id_event 
      JOIN venue v ON e.id_venue = v.id_venue 
@@ -48,7 +48,7 @@ if (strtotime($tiket['tanggal']) < strtotime('today')) {
     exit;
 }
 
-// Cek kuota sisa (langsung ambil dari kolom kuota karena sekarang logic-nya seperti voucher)
+// Cek kuota sisa
 $sisa_kuota = $tiket['kuota'];
 
 if ($sisa_kuota <= 0) {
@@ -61,8 +61,10 @@ if ($sisa_kuota <= 0) {
     exit;
 }
 
-// Logic: Limit 5 tiket per event per user
+// Logic: Limit tiket per event per user (Dinamis dari Database)
 $id_event = $tiket['id_event'];
+$max_beli_user = (int)$tiket['limit_tiket']; // <--- NILAI DINAMIS
+
 $q_cek_limit = mysqli_query($conn, "
     SELECT SUM(od.qty) as total_beli 
     FROM order_detail od 
@@ -74,7 +76,6 @@ $q_cek_limit = mysqli_query($conn, "
 ");
 $row_limit = mysqli_fetch_assoc($q_cek_limit);
 $total_beli = (int)($row_limit['total_beli'] ?? 0);
-$max_beli_user = 5;
 $sisa_jatah_user = $max_beli_user - $total_beli;
 
 $is_limit_reached = $sisa_jatah_user <= 0;
@@ -90,8 +91,8 @@ if (isset($_POST['pesan'])) {
         $error = "Jumlah tiket minimal 1!";
     } elseif ($qty > $sisa_kuota) {
         $error = "Sisa kuota hanya $sisa_kuota tiket.";
-    } elseif ($total_beli + $qty > 5) {
-        $error = "Batas maksimal pembelian tiket untuk event ini adalah 5 tiket. Anda sudah membeli $total_beli tiket.";
+    } elseif ($total_beli + $qty > $max_beli_user) {
+        $error = "Batas maksimal pembelian tiket untuk event ini adalah $max_beli_user tiket. Anda sudah membeli $total_beli tiket.";
     } else {
         $subtotal = $qty * $tiket['harga'];
         $total = $subtotal;
@@ -226,7 +227,7 @@ if (isset($_POST['pesan'])) {
                                     <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
                                     <span class="fw-bold small">BATAS PEMBELIAN TERCAPAI</span>
                                 </div>
-                                <p class="mb-0 mt-1 text-muted" style="font-size:0.75rem;">Anda sudah membeli maksimal 5 tiket untuk event ini (kumulatif semua kategori).</p>
+                                <p class="mb-0 mt-1 text-muted" style="font-size:0.75rem;">Anda sudah membeli maksimal <?= $max_beli_user ?> tiket untuk event ini (kumulatif semua kategori).</p>
                             </div>
                         <?php endif; ?>
 

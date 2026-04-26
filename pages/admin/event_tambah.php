@@ -1,8 +1,9 @@
 <?php
 if (isset($_POST['simpan'])) {
-    $nama_event = mysqli_real_escape_string($conn, $_POST['nama_event']);
-    $tanggal    = $_POST['tanggal'];
-    $id_venue   = (int)$_POST['id_venue'];
+    $nama_event  = mysqli_real_escape_string($conn, $_POST['nama_event']);
+    $tanggal     = $_POST['tanggal'];
+    $id_venue    = (int)$_POST['id_venue'];
+    $limit_tiket = (int)$_POST['limit_tiket'];
     
     // Cek Bentrok
     $q_bentrok = mysqli_query($conn, "SELECT nama_event FROM event WHERE id_venue = '$id_venue' AND tanggal = '$tanggal'");
@@ -35,7 +36,7 @@ if (isset($_POST['simpan'])) {
 
         if ($upload_ok) {
             $val_gambar = $gambar_name ? "'$gambar_name'" : "NULL";
-            $insert = mysqli_query($conn, "INSERT INTO event (nama_event, tanggal, id_venue, gambar) VALUES ('$nama_event', '$tanggal', '$id_venue', $val_gambar)");
+            $insert = mysqli_query($conn, "INSERT INTO event (nama_event, tanggal, id_venue, gambar, limit_tiket) VALUES ('$nama_event', '$tanggal', '$id_venue', $val_gambar, $limit_tiket)");
             if ($insert) {
                 $_SESSION['alert'] = [
                     'type' => 'success',
@@ -116,6 +117,15 @@ $json_events = json_encode($all_events);
                                             </select>
                                         </div>
                                     </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold small text-uppercase opacity-75">Limit Tiket Per User</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-0"><i class="bi bi-shield-lock"></i></span>
+                                        <input type="number" name="limit_tiket" class="form-control form-control-lg border-0 bg-light" value="5" min="1" required style="border-radius: 0 12px 12px 0;">
+                                    </div>
+                                    <div class="form-text mt-2"><i class="bi bi-info-circle me-1"></i>Berapa maksimal tiket yang bisa dibeli oleh satu akun untuk event ini?</div>
                                 </div>
 
                                 <div class="mb-5">
